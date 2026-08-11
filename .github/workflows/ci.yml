@@ -148,7 +148,7 @@ jobs:
           print("fresh wheel import and CLI: passed")
           PY
       - name: Upload Linux wheel and sdist
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: packages-linux-python-${{ matrix.python-version }}
           path: wheelhouse/*
@@ -176,7 +176,7 @@ jobs:
         run: maturin build --release --out wheelhouse
       - name: Install packaged wheel and verify import/CLI
         run: |
-          python -m pip install --force-reinstall --no-deps wheelhouse/*.whl
+          python -c "import glob, subprocess, sys; wheels = glob.glob('wheelhouse/*.whl'); assert len(wheels) == 1, wheels; subprocess.check_call([sys.executable, '-m', 'pip', 'install', '--force-reinstall', '--no-deps', wheels[0]])"
           python -c "import dotenv; assert dotenv.dotenv_values(stream=__import__('io').StringIO('A=1\\n'))['A'] == '1'"
           python -m pip install "click>=5.0"
           python -m dotenv --version
@@ -187,7 +187,7 @@ jobs:
           candidate_root=$(python -c 'import site; print(site.getsitepackages()[0])')
           CANDIDATE_PYTHONPATH='' CANDIDATE_EXPECTED_ROOT="$candidate_root" PYTHON=python bash scripts/run_upstream_full.sh
       - name: Upload packaged wheel
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: wheel-${{ matrix.os }}
           path: wheelhouse/*.whl
