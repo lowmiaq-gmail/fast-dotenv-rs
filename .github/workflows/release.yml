@@ -150,6 +150,11 @@ jobs:
           --expected-version "${{ inputs.version }}"
           --expected-wheels 0
           --expected-sdists 1
+          --require-metadata-text "fast-dotenv-rs[cli]==${{ inputs.version }}"
+          --forbid-metadata-text "There is no PyPI package yet"
+          --forbid-metadata-text "has not yet been published to"
+          --forbid-metadata-text "尚未发布到 PyPI"
+          --forbid-metadata-text "目前没有可供用户直接下载的 PyPI 包"
       - name: Upload verified sdist
         uses: actions/upload-artifact@v7
         with:
@@ -177,6 +182,11 @@ jobs:
           --expected-version "${{ inputs.version }}"
           --expected-wheels 5
           --expected-sdists 1
+          --require-metadata-text "fast-dotenv-rs[cli]==${{ inputs.version }}"
+          --forbid-metadata-text "There is no PyPI package yet"
+          --forbid-metadata-text "has not yet been published to"
+          --forbid-metadata-text "尚未发布到 PyPI"
+          --forbid-metadata-text "目前没有可供用户直接下载的 PyPI 包"
       - name: Upload the exact publish set
         uses: actions/upload-artifact@v7
         with:

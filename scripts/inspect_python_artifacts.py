@@ -25,6 +25,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--expected-version", required=True)
     parser.add_argument("--expected-wheels", type=int, required=True)
     parser.add_argument("--expected-sdists", type=int, required=True)
+    parser.add_argument("--require-metadata-text", action="append", default=[])
+    parser.add_argument("--forbid-metadata-text", action="append", default=[])
     return parser.parse_args()
 
 
@@ -35,10 +37,21 @@ def assert_safe_paths(names: list[str]) -> None:
         assert ".." not in path.parts, name
 
 
-def assert_metadata(raw: bytes, expected_name: str, expected_version: str) -> None:
+def assert_metadata(
+    raw: bytes,
+    expected_name: str,
+    expected_version: str,
+    required_text: list[str],
+    forbidden_text: list[str],
+) -> None:
     metadata = email.parser.BytesParser().parsebytes(raw)
     assert metadata["Name"] == expected_name, metadata["Name"]
     assert metadata["Version"] == expected_version, metadata["Version"]
+    decoded = raw.decode("utf-8", errors="replace")
+    for value in required_text:
+        assert value in decoded, f"required metadata text missing: {value!r}"
+    for value in forbidden_text:
+        assert value not in decoded, f"forbidden metadata text present: {value!r}"
 
 
 def main() -> None:
@@ -79,7 +92,11 @@ def main() -> None:
             metadata_names = [name for name in names if name.endswith(".dist-info/METADATA")]
             assert len(metadata_names) == 1, metadata_names
             assert_metadata(
-                archive.read(metadata_names[0]), args.expected_name, args.expected_version
+                archive.read(metadata_names[0]),
+                args.expected_name,
+                args.expected_version,
+                args.require_metadata_text,
+                args.forbid_metadata_text,
             )
             for name in names:
                 if name.endswith(TEXT_SUFFIXES) or "/sboms/" in f"/{name}":
@@ -102,7 +119,13 @@ def main() -> None:
             assert len(metadata_members) == 1, [member.name for member in metadata_members]
             metadata_file = archive.extractfile(metadata_members[0])
             assert metadata_file is not None
-            assert_metadata(metadata_file.read(), args.expected_name, args.expected_version)
+            assert_metadata(
+                metadata_file.read(),
+                args.expected_name,
+                args.expected_version,
+                args.require_metadata_text,
+                args.forbid_metadata_text,
+            )
             for member in archive.getmembers():
                 if member.isfile() and member.name.endswith(TEXT_SUFFIXES):
                     extracted = archive.extractfile(member)
