@@ -52,73 +52,14 @@ jobs:
           maturin build --release --out wheelhouse
           maturin sdist --out wheelhouse
       - name: Audit wheel and sdist contents
-        env:
-          REPOSITORY_ROOT: ${{ github.workspace }}
-        run: |
-          python - wheelhouse "$REPOSITORY_ROOT" <<'PY'
-          import pathlib
-          import sys
-          import tarfile
-          import zipfile
-
-          artifact_dir = pathlib.Path(sys.argv[1])
-          repository_root = pathlib.Path(sys.argv[2]).resolve()
-          forbidden_text = (
-              str(repository_root),
-              "/workspace/",
-              "/home/runner/work/",
-              "\\\\Users\\\\",
-              "target/debug",
-              "target/release",
-          )
-
-          wheels = sorted(artifact_dir.glob("*.whl"))
-          sdists = sorted(artifact_dir.glob("*.tar.gz"))
-          assert len(wheels) == 1, wheels
-          assert len(sdists) == 1, sdists
-
-          with zipfile.ZipFile(wheels[0]) as archive:
-              names = archive.namelist()
-              assert all(
-                  not pathlib.PurePosixPath(name).is_absolute()
-                  and ".." not in pathlib.PurePosixPath(name).parts
-                  for name in names
-              )
-              assert not any(
-                  name.endswith((".pyc", ".pyo"))
-                  or "/tests/" in f"/{name}"
-                  or "/target/" in f"/{name}"
-                  for name in names
-              ), names
-              for name in names:
-                  data = archive.read(name)
-                  if name.endswith((".py", ".json", ".txt", ".md")):
-                      text = data.decode("utf-8", errors="ignore")
-                      assert not any(value in text for value in forbidden_text), name
-              sboms = [name for name in names if "/sboms/" in f"/{name}"]
-              for name in sboms:
-                  text = archive.read(name).decode("utf-8", errors="ignore")
-                  assert not any(value in text for value in forbidden_text), name
-
-          with tarfile.open(sdists[0], "r:gz") as archive:
-              names = archive.getnames()
-              assert all(
-                  not pathlib.PurePosixPath(name).is_absolute()
-                  and ".." not in pathlib.PurePosixPath(name).parts
-                  for name in names
-              )
-              assert not any(
-                  "/target/" in f"/{name}"
-                  or "/.venv/" in f"/{name}"
-                  or "/__pycache__/" in f"/{name}"
-                  for name in names
-              ), names
-              for member in archive.getmembers():
-                  if member.isfile() and member.name.endswith((".py", ".json", ".txt", ".md")):
-                      text = archive.extractfile(member).read().decode("utf-8", errors="ignore")
-                      assert not any(value in text for value in forbidden_text), member.name
-          print("artifact audit: wheel/sdist paths and local-path leakage passed")
-          PY
+        run: >-
+          python scripts/inspect_python_artifacts.py
+          --artifact-dir wheelhouse
+          --repository-root "$GITHUB_WORKSPACE"
+          --expected-name fast-dotenv-rs
+          --expected-version 0.1.0
+          --expected-wheels 1
+          --expected-sdists 1
       - name: Fresh virtualenv wheel and CLI smoke test
         run: |
           python -m venv fresh-venv

@@ -1,0 +1,278 @@
+name: Release to PyPI
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version from pyproject.toml and Cargo.toml
+        required: true
+        default: "0.1.0"
+        type: string
+      confirm_release:
+        description: Publish this version to PyPI and create a GitHub pre-release
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    name: Validate release request
+    runs-on: ubuntu-22.04
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Require main and explicit confirmation
+        env:
+          CONFIRMED: ${{ inputs.confirm_release }}
+        run: |
+          test "$GITHUB_REF" = "refs/heads/main"
+          test "$CONFIRMED" = "true"
+      - id: version
+        name: Match Python, Rust, and requested versions
+        env:
+          REQUESTED_VERSION: ${{ inputs.version }}
+        run: |
+          python - <<'PY'
+          import os
+          import pathlib
+          import tomllib
+
+          requested = os.environ["REQUESTED_VERSION"]
+          pyproject = tomllib.loads(pathlib.Path("pyproject.toml").read_text())
+          cargo = tomllib.loads(pathlib.Path("Cargo.toml").read_text())
+          assert requested == pyproject["project"]["version"]
+          assert requested == cargo["package"]["version"]
+          assert requested == "0.1.0", "update the release notes gate for a new version"
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              output.write(f"tag=v{requested}\n")
+          PY
+
+  wheels:
+    name: Wheel / ${{ matrix.label }}
+    needs: validate
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: linux-x86_64
+            os: ubuntu-22.04
+            target: x86_64
+            manylinux: "2014"
+          - label: linux-aarch64
+            os: ubuntu-24.04-arm
+            target: aarch64
+            manylinux: "2014"
+          - label: macos-arm64
+            os: macos-15
+            target: aarch64
+            manylinux: "off"
+          - label: macos-x86_64
+            os: macos-15-intel
+            target: x86_64
+            manylinux: "off"
+          - label: windows-x86_64
+            os: windows-2022
+            target: x64
+            manylinux: "off"
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Build locked PyPI-compatible wheel
+        uses: PyO3/maturin-action@86b9d133d34bc1b40018696f782949dac11bd380 # v1.49.4
+        with:
+          command: build
+          maturin-version: v1.11.5
+          target: ${{ matrix.target }}
+          manylinux: ${{ matrix.manylinux }}
+          args: --release --locked --compatibility pypi --out dist
+      - name: Install the exact wheel
+        run: >-
+          python -c "import glob, subprocess, sys;
+          wheels=glob.glob('dist/*.whl'); assert len(wheels)==1, wheels;
+          subprocess.check_call([sys.executable, '-m', 'pip', 'install', '--force-reinstall', '--no-deps', wheels[0]]);
+          subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'click>=5.0', 'pytest>=8,<9', 'ipython>=8'])"
+      - name: Wheel namespace and CLI smoke test
+        run: >-
+          python -c "from io import StringIO; import dotenv, subprocess, sys;
+          assert dotenv.dotenv_values(stream=StringIO('A=1\n')) == {'A': '1'};
+          result=subprocess.run([sys.executable, '-m', 'dotenv', '--version'], check=True, capture_output=True, text=True);
+          assert '${{ inputs.version }}' in result.stdout, result.stdout"
+      - name: Complete pinned upstream suite against wheel
+        shell: bash
+        run: |
+          candidate_root=$(python -c 'import site; print(site.getsitepackages()[0])')
+          CANDIDATE_PYTHONPATH='' CANDIDATE_EXPECTED_ROOT="$candidate_root" PYTHON=python bash scripts/run_upstream_full.sh
+      - name: Upload verified wheel
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-wheel-${{ matrix.label }}
+          path: dist/*.whl
+          if-no-files-found: error
+
+  sdist:
+    name: Source distribution
+    needs: validate
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Build locked sdist
+        run: |
+          python -m pip install "maturin==1.11.5"
+          maturin sdist --out dist
+      - name: Prove the sdist can build and install
+        run: |
+          python -m pip wheel --no-deps --wheel-dir sdist-wheel dist/*.tar.gz
+          python -m pip install --force-reinstall --no-deps sdist-wheel/*.whl
+          python -c "from io import StringIO; import dotenv; assert dotenv.dotenv_values(stream=StringIO('A=1\n')) == {'A': '1'}"
+      - name: Audit sdist
+        run: >-
+          python scripts/inspect_python_artifacts.py
+          --artifact-dir dist
+          --repository-root "$GITHUB_WORKSPACE"
+          --expected-name fast-dotenv-rs
+          --expected-version "${{ inputs.version }}"
+          --expected-wheels 0
+          --expected-sdists 1
+      - name: Upload verified sdist
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-sdist
+          path: dist/*.tar.gz
+          if-no-files-found: error
+
+  collect:
+    name: Audit immutable release set
+    needs: [validate, wheels, sdist]
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: release-*
+          path: dist
+          merge-multiple: true
+      - name: Audit names, versions, paths, and release cardinality
+        run: >-
+          python scripts/inspect_python_artifacts.py
+          --artifact-dir dist
+          --repository-root "$GITHUB_WORKSPACE"
+          --expected-name fast-dotenv-rs
+          --expected-version "${{ inputs.version }}"
+          --expected-wheels 5
+          --expected-sdists 1
+      - name: Upload the exact publish set
+        uses: actions/upload-artifact@v7
+        with:
+          name: verified-release-distributions
+          path: |
+            dist/*.whl
+            dist/*.tar.gz
+          if-no-files-found: error
+
+  publish-pypi:
+    name: Publish immutable set to PyPI
+    needs: [validate, collect]
+    runs-on: ubuntu-22.04
+    environment:
+      name: pypi
+      url: https://pypi.org/project/fast-dotenv-rs/${{ inputs.version }}/
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: verified-release-distributions
+          path: dist
+      - name: Publish with PyPI Trusted Publishing
+        uses: pypa/gh-action-pypi-publish@v1.14.2
+        with:
+          packages-dir: dist/
+
+  post-publish:
+    name: PyPI install / ${{ matrix.label }}
+    needs: [validate, publish-pypi]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: linux-x86_64
+            os: ubuntu-22.04
+          - label: linux-aarch64
+            os: ubuntu-24.04-arm
+          - label: macos-arm64
+            os: macos-15
+          - label: macos-x86_64
+            os: macos-15-intel
+          - label: windows-x86_64
+            os: windows-2022
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Install the public PyPI package with retry for index propagation
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: >-
+          python -c "import os, subprocess, sys, time;
+          spec='fast-dotenv-rs[cli]==' + os.environ['RELEASE_VERSION'];
+          attempts=6;
+          [(subprocess.run([sys.executable, '-m', 'pip', 'install', '--no-cache-dir', spec]).returncode == 0 and sys.exit(0)) or time.sleep(20) for _ in range(attempts)];
+          sys.exit('PyPI package did not become installable after retries')"
+      - name: Public namespace and CLI smoke test
+        run: >-
+          python -c "from io import StringIO; import dotenv, subprocess, sys;
+          assert 'site-packages' in dotenv.__file__ or 'dist-packages' in dotenv.__file__, dotenv.__file__;
+          assert dotenv.dotenv_values(stream=StringIO('A=1\n')) == {'A': '1'};
+          result=subprocess.run([sys.executable, '-m', 'dotenv', '--version'], check=True, capture_output=True, text=True);
+          assert '${{ inputs.version }}' in result.stdout, result.stdout"
+      - name: Complete pinned upstream suite against public PyPI install
+        shell: bash
+        run: |
+          python -m pip install "pytest>=8,<9" "ipython>=8"
+          candidate_root=$(python -c 'import site; print(site.getsitepackages()[0])')
+          CANDIDATE_PYTHONPATH='' CANDIDATE_EXPECTED_ROOT="$candidate_root" PYTHON=python bash scripts/run_upstream_full.sh
+
+  github-release:
+    name: Create verified GitHub pre-release
+    needs: [validate, collect, post-publish]
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/download-artifact@v8
+        with:
+          name: verified-release-distributions
+          path: dist
+      - name: Create checksums
+        working-directory: dist
+        run: sha256sum * | sort -k2 > SHA256SUMS
+      - name: Publish pre-release from the verified commit and artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ needs.validate.outputs.tag }}
+        run: >-
+          gh release create "$RELEASE_TAG" dist/*
+          --target "$GITHUB_SHA"
+          --prerelease
+          --title "fast-dotenv-rs $RELEASE_TAG"
+          --notes-file docs/RELEASE-NOTES-0.1.0.md

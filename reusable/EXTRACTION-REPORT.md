@@ -12,6 +12,12 @@ dotenv-specific code so the next rewrite does not clone hidden assumptions.
 - Oracle differential-test structure and deterministic generated corpus pattern.
 - Cross-platform CI stages and the rule that packaged wheels, not only editable
   builds, must be tested.
+- Dependency-free artifact inspector (`scripts/inspect_python_artifacts.py`):
+  cardinality, filename uniqueness, metadata name/version, archive path safety,
+  build leakage, and unwanted test/bytecode checks.
+- Fail-closed Trusted Publishing topology: parallel native wheel lanes, isolated
+  sdist lane, immutable artifact collection, OIDC-only publish job, public-index
+  reinstall gates, checksums, and GitHub release creation last.
 - Claim policy: no fixed speedup, “drop-in,” or “100% compatible” before gates.
 
 ## Parameterize for each project
@@ -21,6 +27,8 @@ dotenv-specific code so the next rewrite does not clone hidden assumptions.
 - Oracle installation command and selected upstream test command.
 - Benchmark workloads, minimum useful speedup and real downstream scenario.
 - Wheel targets and architecture matrix.
+- Registry project name, GitHub owner/repository, workflow filename, release
+  environment, release-note path, version gate, and final release type.
 
 ## Never generalize
 
