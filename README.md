@@ -1,6 +1,7 @@
 # fast-dotenv-rs
 
 [![CI](https://github.com/lowmiaq-gmail/fast-dotenv-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/lowmiaq-gmail/fast-dotenv-rs/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/fast-dotenv-rs.svg)](https://pypi.org/project/fast-dotenv-rs/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![Rust](https://img.shields.io/badge/Rust-PyO3-orange.svg)](https://pyo3.rs/)
 [![License](https://img.shields.io/badge/license-MIT%20AND%20BSD--3--Clause-green.svg)](LICENSE)
@@ -32,8 +33,11 @@ importing `dotenv`.
 
 ## Status
 
-This is a public pre-release source repository. It has not yet been published to
-PyPI and no GitHub Release has been created.
+Version `0.1.0` is published on PyPI and as a verified GitHub pre-release.
+[Release workflow #31520894781](https://github.com/lowmiaq-gmail/fast-dotenv-rs/actions/runs/31520894781)
+built five native wheels and one sdist, published that immutable set through
+Trusted Publishing, then reinstalled the public PyPI package and passed the full
+upstream compatibility suite on every advertised platform.
 
 [GitHub Actions CI #3](https://github.com/lowmiaq-gmail/fast-dotenv-rs/actions/runs/31511953697)
 passed all four jobs:
@@ -55,7 +59,13 @@ so all three upstream IPython tests ran.
 
 ## Installation
 
-There is no PyPI package yet. Build from source:
+Install the published package:
+
+```bash
+python -m pip install "fast-dotenv-rs[cli]==0.1.0"
+```
+
+Application code continues importing `dotenv`. To build from source instead:
 
 ```bash
 git clone https://github.com/lowmiaq-gmail/fast-dotenv-rs.git

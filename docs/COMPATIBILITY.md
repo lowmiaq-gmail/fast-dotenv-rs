@@ -23,7 +23,7 @@ python -m dotenv run -- python app.py
 | 本地已验证 | Linux x86-64、CPython 3.12、完整上游目录：218 passed、1 skipped、0 failed |
 | IPython 条件 | IPython 已安装，3 个上游 IPython 测试均实际执行；唯一 skip 为上游平台条件 |
 | macOS/Windows | CI #3 wheel 构建、安装、CLI 与上游套件通过；macOS 219 passed，Windows 169 passed / 50 平台 skip |
-| PyPI/GitHub | GitHub 源码已公开；PyPI 与 GitHub Release 尚未发布 |
+| PyPI/GitHub | `0.1.0` 已发布；五个平台从公共 PyPI 回装并通过完整上游套件；GitHub pre-release 含 SHA256SUMS |
 
 跨平台 CI 是当前候选版本的构建与兼容证据，不是对所有 Python 版本或真实应用
 workload 性能的推断。完整测试的原始来源、hash、模块和签名见
@@ -131,7 +131,8 @@ bash scripts/run_upstream_full.sh
 
 ## 6. 发布判定
 
-当前判定：**Linux 本地与跨平台 CI gate 通过；GitHub 源码已公开；PyPI/Release 尚未发布。**
-
-README、CHANGELOG 和 release note 仍不得声称“PyPI 已发布”或“跨平台普遍提速”。
-正式发布必须绑定对应 commit、wheel、测试日志和可复现 benchmark 记录。
+当前判定：**`0.1.0` 已完成 PyPI 与 GitHub pre-release 发布；五个平台的公共 PyPI
+回装和完整上游兼容门禁通过。**发布证据绑定
+[workflow #31520894781](https://github.com/lowmiaq-gmail/fast-dotenv-rs/actions/runs/31520894781)
+及 [v0.1.0](https://github.com/lowmiaq-gmail/fast-dotenv-rs/releases/tag/v0.1.0)。
+这仍不构成 macOS/Windows 性能结论；性能声明继续受 benchmark 证据边界约束。

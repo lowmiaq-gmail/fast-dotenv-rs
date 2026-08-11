@@ -2,12 +2,12 @@
 
 ## 判定
 
-当前项目是一个**已公开源码、未发布到 PyPI 的预发布候选**。目标是作为
+当前项目是一个**已发布到 PyPI 的 `0.1.0` 预发布版本**。目标是作为
 `python-dotenv==1.2.2` 的完整 drop-in replacement 使用：发行名为
 `fast-dotenv-rs`，运行时仍为 `dotenv` import、`dotenv` CLI 和 `%dotenv`。
 
-当前证据支持：Linux x86-64、macOS arm64 和 Windows x86-64 的 CI 构建、wheel
-安装与上游兼容门禁通过。当前证据不支持：PyPI 或 GitHub Release 已发布、所有应用
+当前证据支持：Linux x86-64/ARM64、macOS Intel/Apple Silicon 和 Windows x86-64
+的 wheel 构建、公共 PyPI 回装与完整上游兼容门禁通过。当前证据不支持：所有应用
 workload 都有加速，或任何未记录平台的结果。
 
 ## 已验证证据
@@ -28,7 +28,7 @@ workload 都有加速，或任何未记录平台的结果。
 | macOS wheel | 通过 | CI #3；macOS arm64 / CPython 3.12；219 passed；artifact digest `071ae254…e26b10d` |
 | Windows wheel | 通过 | CI #3；Windows x86-64 / CPython 3.12；169 passed、50 个上游平台 skip；artifact digest `12d723d9…b31d4ef` |
 | 公开 GitHub 源码 | 通过 | `lowmiaq-gmail/fast-dotenv-rs`；公开；`main`；CI #3 success |
-| PyPI / GitHub Release | 未发布 | 本报告不提供虚构的 PyPI 下载地址或 release 链接 |
+| PyPI / GitHub Release | 通过 | `0.1.0`、五个 wheel、一个 sdist、`SHA256SUMS`；workflow #31520894781 |
 
 ## 如何复现
 
@@ -81,12 +81,16 @@ Python 版本和 wheel/源码状态。当前 [`BENCHMARK.md`](BENCHMARK.md) 的�
 记录的 Linux 环境和内存 stream workload，不代表文件 I/O、启动延迟、macOS、Windows
 或任何真实业务，也不应直接写成跨平台营销数字。
 
-## 发布前剩余工作
+## 发布结果
 
-1. 对最终 release wheel 运行隔离 benchmark，保存原始结果，不将 Linux 单机数据外推；
-2. 核对最终版本、README、CHANGELOG、artifact hash 与 PyPI Trusted Publishing；
-3. 创建 GitHub pre-release，并从同一受验提交发布 PyPI，而不是重新构建未验产物；
-4. PyPI 安装后再做一次独立 namespace、CLI 和上游兼容 smoke test。
+1. Trusted Publishing 已将同一审计产物集合发布到
+   <https://pypi.org/project/fast-dotenv-rs/0.1.0/>；
+2. 五个平台均从公共 PyPI 回装，namespace、CLI 和完整上游兼容套件通过；
+3. GitHub pre-release 已发布：
+   <https://github.com/lowmiaq-gmail/fast-dotenv-rs/releases/tag/v0.1.0>；
+4. 完整发布流水线：
+   <https://github.com/lowmiaq-gmail/fast-dotenv-rs/actions/runs/31520894781>；
+5. 后续性能宣传仍须保存可复现原始结果，不得将 Linux 单机数据外推到其他平台。
 
 ## 相关文档
 

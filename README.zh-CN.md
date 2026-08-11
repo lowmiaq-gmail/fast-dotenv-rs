@@ -3,6 +3,7 @@
 [English](README.md)
 
 [![CI](https://github.com/lowmiaq-gmail/fast-dotenv-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/lowmiaq-gmail/fast-dotenv-rs/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/fast-dotenv-rs.svg)](https://pypi.org/project/fast-dotenv-rs/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![Rust](https://img.shields.io/badge/Rust-PyO3-orange.svg)](https://pyo3.rs/)
 [![License](https://img.shields.io/badge/license-MIT%20AND%20BSD--3--Clause-green.svg)](LICENSE)
@@ -47,7 +48,10 @@ macOS/Windows 或全部业务场景的结论。完整输入、命令和限制见
 
 ## 当前状态
 
-这是公开源码的预发布版本；尚未发布到 PyPI，也尚未创建 GitHub Release。
+`0.1.0` 已发布到 PyPI，并创建了带校验文件的 GitHub pre-release。
+[正式发布流水线 #31520894781](https://github.com/lowmiaq-gmail/fast-dotenv-rs/actions/runs/31520894781)
+构建了五个平台 wheel 和一个 sdist，通过 Trusted Publishing 上传，再分别从公共
+PyPI 回装并运行完整上游兼容性测试；所有发布任务均通过。
 本地 Linux x86-64 / CPython 3.12 的完整上游验收入口已经通过：
 
 ```text
@@ -65,7 +69,13 @@ macOS/Windows 或全部业务场景的结论。完整输入、命令和限制见
 
 ## 安装
 
-目前没有可供用户直接下载的 PyPI 包。请从源码构建：
+从 PyPI 安装：
+
+```bash
+python -m pip install "fast-dotenv-rs[cli]==0.1.0"
+```
+
+业务代码仍然使用 `import dotenv`。如需从源码构建：
 
 ```bash
 python -m venv .venv

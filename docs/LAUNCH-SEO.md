@@ -54,15 +54,15 @@ preview。文件为 1280×640 PNG、低于 1 MB；图片只表达项目名、兼
 
 ## 发布门禁
 
-当前进度（2026-08-11）：公开仓库与跨平台 CI 已通过；PyPI、GitHub Release、Topics、
-仓库描述和 social preview 的站点配置仍待完成。
+当前进度（2026-08-11）：公开仓库、跨平台 CI、PyPI `0.1.0`、五平台公共回装验证和
+GitHub pre-release 已完成；Topics、仓库描述和 social preview 的站点配置仍待完成。
 
 1. 公开仓库存在，默认分支为 `main`，README、许可证、第三方通知可访问；
 2. GitHub Actions 的 Linux、macOS、Windows wheel 构建和安装验证通过；
 3. release wheel 在独立环境中再次通过完整上游测试；
-4. PyPI 名称可用、Trusted Publishing 配置完成，再发布 `0.1.0`；
+4. PyPI 名称、Trusted Publishing 和 `0.1.0` 发布已完成；
 5. PyPI 页面上的描述、项目链接、许可证和安装命令实际可用；
-6. 上述证据完成前只称 pre-release，不发布虚构下载地址或跨平台性能结论。
+6. 发布仍称 pre-release；不得把 Linux 单机 benchmark 外推成跨平台性能结论。
 
 ## 首发内容资产
 

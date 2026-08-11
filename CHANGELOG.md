@@ -2,8 +2,8 @@
 
 ## 0.1.0 — pre-release
 
-本版本源码已经公开，但尚未发布到 PyPI，也尚未创建 GitHub Release。发行名为
-`fast-dotenv-rs`；安装后仍使用上游兼容的 `dotenv` import 和 `dotenv` CLI。
+本版本已发布到 PyPI，并创建 GitHub pre-release。发行名为 `fast-dotenv-rs`；安装后
+仍使用上游兼容的 `dotenv` import 和 `dotenv` CLI。
 
 ### 已完成
 
@@ -26,12 +26,15 @@
 - Linux release wheel 在 fresh venv 中通过无 Click 基础导入、CLI 和完整上游套件；
 - GitHub Actions CI #3 的 Linux Python 3.10/3.12、macOS arm64、Windows x86-64
   四个矩阵任务全部通过；macOS 为 219 passed，Windows 为 169 passed / 50 平台 skip；
-- CI 已生成 Linux、macOS 和 Windows artifacts；它们不是 PyPI 发布包，也未提供虚构的
-  PyPI 安装地址；
+- 正式发布流水线构建并审计了 Linux x86-64、Linux ARM64、macOS Intel、macOS
+  Apple Silicon、Windows x86-64 五个 wheel 和一个 sdist；
+- Trusted Publishing 上传成功，五个平台随后从公共 PyPI 回装并通过完整上游套件；
+- GitHub pre-release 包含相同的六个发布产物和 `SHA256SUMS`；
 - `python-dotenv==1.2.2` 与本项目不能在同一个环境安装，必须用独立 Oracle 环境做
   对比，否则顶层 `dotenv` 包和 CLI 会相互覆盖。
 
-### 后续发布门禁
+### 发布证据
 
-最终 PyPI 发布前仍需锁定同一受验 commit 和 artifacts、配置 Trusted Publishing、
-建立 GitHub pre-release，并在 PyPI 安装后重复 namespace、CLI 与上游兼容 smoke test。
+- PyPI：<https://pypi.org/project/fast-dotenv-rs/0.1.0/>
+- GitHub Release：<https://github.com/lowmiaq-gmail/fast-dotenv-rs/releases/tag/v0.1.0>
+- 发布流水线：<https://github.com/lowmiaq-gmail/fast-dotenv-rs/actions/runs/31520894781>
