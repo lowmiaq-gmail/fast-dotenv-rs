@@ -23,7 +23,7 @@ python -m dotenv run -- python app.py
 | 本地已验证 | Linux x86-64、CPython 3.12、完整上游目录：218 passed、1 skipped、0 failed |
 | IPython 条件 | IPython 已安装，3 个上游 IPython 测试均实际执行；唯一 skip 为上游平台条件 |
 | macOS/Windows | CI #3 wheel 构建、安装、CLI 与上游套件通过；macOS 219 passed，Windows 169 passed / 50 平台 skip |
-| PyPI/GitHub | `0.1.0` 后续已提升为 formal Release，但普通安装 CLI 仍失败；`0.1.1` formal release 与五平台普通公网安装证据待发布流水线验证 |
+| PyPI/GitHub | `0.1.1` 已由 immutable release workflow 完成五平台普通公网安装、完整上游套件和 formal Release last；PyPI 与 GitHub Release 的 5 wheels + sdist SHA256 完全一致 |
 
 跨平台 CI 是当前候选版本的构建与兼容证据，不是对所有 Python 版本或真实应用
 workload 性能的推断。完整测试的原始来源、hash、模块和签名见
@@ -131,9 +131,12 @@ bash scripts/run_upstream_full.sh
 
 ## 6. 发布判定
 
-当前判定：**BLOCKED，尚未满足正式发布门禁。** `0.1.0` 历史发布证据绑定
+当前判定：**RELEASE COMPLETE。** `0.1.0` 历史发布证据绑定
 [workflow #31520894781](https://github.com/lowmiaq-gmail/fast-dotenv-rs/actions/runs/31520894781)
 及 [v0.1.0](https://github.com/lowmiaq-gmail/fast-dotenv-rs/releases/tag/v0.1.0)；该 Release
-后续已转为 formal，但旧流水线
-通过 `[cli]` extra 安装，不能证明基础包 CLI。必须由 `0.1.1` 同一 immutable artifact
-set 在五个平台以普通安装方式复验，并在最后创建 formal GitHub Release，才可改为完成。
+后续已转为 formal，但旧流水线通过 `[cli]` extra 安装，不能证明基础包 CLI。
+`0.1.1` 已由 [workflow #31528136044](https://github.com/lowmiaq-gmail/fast-dotenv-rs/actions/runs/31528136044)
+从同一 immutable artifact set 在五个平台以普通安装方式复验，并在最后创建
+[formal GitHub Release](https://github.com/lowmiaq-gmail/fast-dotenv-rs/releases/tag/v0.1.1)。
+[发布后监控 #31528544319](https://github.com/lowmiaq-gmail/fast-dotenv-rs/actions/runs/31528544319)
+也已通过。

@@ -12,45 +12,22 @@
 | 领域 | 状态 | 当前证据 / 说明 |
 |---|---|---|
 | Engineering | `ENGINEERING_COMPLETE` | 固定 `python-dotenv==1.2.2` 的完整上游套件、差分验证和跨平台构建证据已形成。 |
-| GitHub Release | `V0_1_1_RELEASE_CONFIRMED` | GitHub 已存在正式 `v0.1.1` Release，并包含 macOS Intel/Apple Silicon、Linux x86-64/ARM64、Windows x86-64 wheel 和 sdist。 |
-| PyPI distribution | `REVERIFY_PUBLIC_0_1_1` | 旧 `0.1.0` 普通安装 CLI 缺 Click 的问题已推动版本升级到 `0.1.1`；在把整个 Distribution 判为完成前，仍应以普通公网 `pip install fast-dotenv-rs==0.1.1` + 完整验收的最新可复现证据做一次最终核验。 |
-| Owned-channel launch | `OWNED_SURFACES_COMPLETE` | 仓库 description、homepage/topics、social preview 等 Owned surfaces 已完成过验证；如果后续修改，应重新检查。 |
+| Distribution | `DISTRIBUTION_COMPLETE` | [release workflow 31528136044](https://github.com/lowmiaq-gmail/fast-dotenv-rs/actions/runs/31528136044) 通过五平台普通公网安装与完整上游套件，并最后创建 [formal v0.1.1](https://github.com/lowmiaq-gmail/fast-dotenv-rs/releases/tag/v0.1.1)；[PyPI 0.1.1](https://pypi.org/project/fast-dotenv-rs/0.1.1/) 的 5 wheels + sdist 与 Release SHA256 完全一致。 |
+| Owned-channel launch | `OWNED_SURFACES_COMPLETE` | GitHub API 已验证 description、homepage/topics；Settings 页面已验证 social preview。 |
 | External community launch | `NOT_APPROVED` | 没有明确授权并验证公开 URL 的外部渠道，不计作发布完成。草稿不等于发布。 |
-| Monitoring | `READY_FOR_REVERIFY` | 发布/采用监控能力已存在；最终状态应以 `0.1.1` 的公开分发和后续 checkpoint 数据重新核验。 |
+| Monitoring | `MONITORING_COMPLETE` | [post-release run 31528544319](https://github.com/lowmiaq-gmail/fast-dotenv-rs/actions/runs/31528544319) 已针对发布 commit `f254fdf1740db263a7f6f84049e60d8d5bfb8737` 成功。 |
 
-## 为什么这里没有直接写 LAUNCH_COMPLETE
+## Distribution 终验证据
 
-本轮 `project-setup adopt` dogfood 发现旧发布文档存在明显状态漂移：历史计划仍写“等待发布”，但 GitHub `v0.1.1` 正式 Release 已经存在。
-
-因此状态判定遵循：
-
-实际公开证据 / CI / 安装结果
->
-当前状态文档
->
-历史计划
-
-在 PyPI `0.1.1` 普通公网安装与完整门禁被最新证据明确核验之前，保持保守状态，不从旧文档或记忆推断完成。
-
-## 完成 Distribution 前的最小核验
-
-1. 在干净环境普通安装：
-
-```bash
-python -m pip install "fast-dotenv-rs==0.1.1"
-```
-
-2. 不使用 `[cli]` extra，确认：
-
-```bash
-dotenv --version
-python -m dotenv --help
-python -c "import dotenv; print(dotenv.__file__)"
-```
-
-3. 对安装产物运行发布要求的完整兼容性门禁，而不是仅 smoke test。
-4. 核对安装版本、wheel/sdist、GitHub Release 和 CI 指向同一正式版本。
-5. 证据成立后再将 Distribution 标为完成，并同步根 `PROGRESS.md` 与需要更新的发布报告。
+1. 由同一 immutable artifact set 发布 5 个 wheel 与 1 个 sdist；
+2. release workflow 在 Linux x86-64/ARM64、macOS Intel/Apple Silicon、Windows x86-64
+   普通安装基础包并运行完整上游套件；
+3. 正式 GitHub Release 在所有公网回装 lane 成功后最后创建；
+4. 独立 fresh macOS arm64 venv 显式使用官方 `https://pypi.org/simple` 普通安装，
+   version、import、API、`python -m dotenv` 与真实 `dotenv` console script 均通过，且
+   没有 `direct_url.json`；
+5. 本机默认 pip 镜像首次仍只暴露 `0.1.0`，保留为镜像传播/缓存差异，不将它隐藏，
+   也不误写为官方 PyPI 索引失败。
 
 ## 外部推广完成规则
 

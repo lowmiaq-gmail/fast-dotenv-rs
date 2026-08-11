@@ -38,7 +38,12 @@ plain public install provides the complete `dotenv` CLI. The release workflow
 builds five native wheels and one sdist, publishes that immutable set through
 Trusted Publishing, then reinstalls the base public package and passes the full
 upstream compatibility suite on every advertised platform before creating the
-formal GitHub Release. Until those public links exist, the release remains blocked.
+formal GitHub Release. The [validated CI](https://github.com/lowmiaq-gmail/fast-dotenv-rs/actions/runs/31527970888),
+[immutable release workflow](https://github.com/lowmiaq-gmail/fast-dotenv-rs/actions/runs/31528136044),
+[PyPI 0.1.1](https://pypi.org/project/fast-dotenv-rs/0.1.1/),
+[formal GitHub Release](https://github.com/lowmiaq-gmail/fast-dotenv-rs/releases/tag/v0.1.1),
+and [post-release monitoring](https://github.com/lowmiaq-gmail/fast-dotenv-rs/actions/runs/31528544319)
+are all complete.
 
 [GitHub Actions CI #3](https://github.com/lowmiaq-gmail/fast-dotenv-rs/actions/runs/31511953697)
 passed all four jobs:
@@ -60,7 +65,7 @@ so all three upstream IPython tests ran.
 
 ## Installation
 
-After the `0.1.1` public release exists, install the package with:
+Install the published `0.1.1` package with:
 
 ```bash
 python -m pip install "fast-dotenv-rs==0.1.1"

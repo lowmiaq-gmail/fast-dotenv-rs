@@ -51,7 +51,13 @@ macOS/Windows 或全部业务场景的结论。完整输入、命令和限制见
 `0.1.1` 是正式发布线。它把 Click 改为默认依赖，使普通公网安装立即提供完整
 `dotenv` CLI。发布流水线构建五个平台 wheel 和一个 sdist，通过 Trusted Publishing
 发布同一组不可变产物，再从公共 PyPI 普通安装并运行完整上游兼容性测试，最后创建
-正式 GitHub Release。在这些公网证据出现前，发布仍是阻断状态。
+正式 GitHub Release。当前
+[validated CI](https://github.com/lowmiaq-gmail/fast-dotenv-rs/actions/runs/31527970888)、
+[immutable release workflow](https://github.com/lowmiaq-gmail/fast-dotenv-rs/actions/runs/31528136044)、
+[PyPI 0.1.1](https://pypi.org/project/fast-dotenv-rs/0.1.1/)、
+[formal GitHub Release](https://github.com/lowmiaq-gmail/fast-dotenv-rs/releases/tag/v0.1.1)
+与[发布后监控](https://github.com/lowmiaq-gmail/fast-dotenv-rs/actions/runs/31528544319)
+均已完成。
 本地 Linux x86-64 / CPython 3.12 的完整上游验收入口已经通过：
 
 ```text
@@ -69,7 +75,7 @@ macOS/Windows 或全部业务场景的结论。完整输入、命令和限制见
 
 ## 安装
 
-`0.1.1` 公网发布完成后，从 PyPI 安装：
+从 PyPI 安装已发布的 `0.1.1`：
 
 ```bash
 python -m pip install "fast-dotenv-rs==0.1.1"

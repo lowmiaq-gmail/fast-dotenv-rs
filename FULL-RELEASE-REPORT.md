@@ -2,10 +2,10 @@
 
 ## 判定
 
-当前项目处于 **`0.1.1` 正式发布修复阶段**。已发布的 `0.1.0` 预发布版本不能作为
-完成基线：普通 `pip install fast-dotenv-rs==0.1.0` 不会安装 Click，导致 wheel 自带
-`dotenv --version` 立即失败；GitHub `v0.1.0` 后续虽已提升为 formal Release，
-但不能修复已发布 wheel 的依赖元数据。目标仍是作为
+当前项目的 **`0.1.1` 正式发布已完成**。历史 `0.1.0` 不能作为完成基线：普通
+`pip install fast-dotenv-rs==0.1.0` 不会安装 Click，导致 wheel 自带
+`dotenv --version` 立即失败；GitHub `v0.1.0` 后续虽已提升为 formal Release，仍不能
+修复已发布 wheel 的依赖元数据。`0.1.1` 已作为
 `python-dotenv==1.2.2` 的完整 drop-in replacement 使用：发行名为
 `fast-dotenv-rs`，运行时仍为 `dotenv` import、`dotenv` CLI 和 `%dotenv`。
 
@@ -31,7 +31,7 @@ workload 都有加速，或任何未记录平台的结果。
 | macOS wheel | 通过 | CI #3；macOS arm64 / CPython 3.12；219 passed；artifact digest `071ae254…e26b10d` |
 | Windows wheel | 通过 | CI #3；Windows x86-64 / CPython 3.12；169 passed、50 个上游平台 skip；artifact digest `12d723d9…b31d4ef` |
 | 公开 GitHub 源码 | 通过 | `lowmiaq-gmail/fast-dotenv-rs`；公开；`main`；CI #3 success |
-| PyPI / GitHub Release | BLOCKED | `0.1.0` 产物存在但不满足默认安装 CLI 与 formal Release 门禁；等待 `0.1.1` immutable artifacts、公网普通安装复验和 formal Release last |
+| PyPI / GitHub Release | 通过 | [release workflow 31528136044](https://github.com/lowmiaq-gmail/fast-dotenv-rs/actions/runs/31528136044) 从同一 immutable set 发布 5 wheels + sdist，五平台普通公网安装通过，最后创建 [formal v0.1.1](https://github.com/lowmiaq-gmail/fast-dotenv-rs/releases/tag/v0.1.1)；[PyPI 0.1.1](https://pypi.org/project/fast-dotenv-rs/0.1.1/) 六个 SHA256 与 Release 完全一致 |
 
 ## 如何复现
 
@@ -84,7 +84,7 @@ Python 版本和 wheel/源码状态。当前 [`BENCHMARK.md`](BENCHMARK.md) 的�
 记录的 Linux 环境和内存 stream workload，不代表文件 I/O、启动延迟、macOS、Windows
 或任何真实业务，也不应直接写成跨平台营销数字。
 
-## 0.1.0 历史发布证据与 0.1.1 阻断
+## 0.1.0 历史缺陷与 0.1.1 闭环
 
 1. Trusted Publishing 曾将 `0.1.0` 同一审计产物集合发布到
    <https://pypi.org/project/fast-dotenv-rs/0.1.0/>；
@@ -93,8 +93,13 @@ Python 版本和 wheel/源码状态。当前 [`BENCHMARK.md`](BENCHMARK.md) 的�
    <https://github.com/lowmiaq-gmail/fast-dotenv-rs/releases/tag/v0.1.0>；
 4. 完整发布流水线：
    <https://github.com/lowmiaq-gmail/fast-dotenv-rs/actions/runs/31520894781>；
-5. `0.1.1` 只有在五平台普通公网安装、完整套件、不可变校验和 formal GitHub Release
-   last 均通过后才允许重新判为完成；后续性能宣传仍不得外推 Linux 单机数据。
+5. `0.1.1` 的五平台普通公网安装、完整套件、不可变校验和 formal GitHub Release last
+   已由 [workflow 31528136044](https://github.com/lowmiaq-gmail/fast-dotenv-rs/actions/runs/31528136044)
+   通过；[发布后监控 31528544319](https://github.com/lowmiaq-gmail/fast-dotenv-rs/actions/runs/31528544319)
+   也已通过；
+6. 独立 fresh macOS arm64 venv 显式使用官方 `https://pypi.org/simple` 普通安装通过，
+   且没有 `direct_url.json`。本机默认 pip 镜像首次仍只暴露 `0.1.0`，保留为镜像传播/
+   缓存差异，不把它隐藏或误写为官方索引失败；后续性能宣传仍不得外推 Linux 单机数据。
 
 ## 相关文档
 
