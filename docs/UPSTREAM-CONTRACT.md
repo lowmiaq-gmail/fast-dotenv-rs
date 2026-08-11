@@ -349,7 +349,7 @@ def load_ipython_extension(ipython) -> None: ...
 ### 2.7 `dotenv.version`
 
 Oracle 的 `dotenv.version.__version__` 为 `1.2.2`。候选发行版返回自身版本
-`0.1.0`，这是为区分实现而保留的唯一显式版本标识差异；API、CLI 和行为契约仍冻结到
+`0.1.1`，这是为区分实现而保留的唯一显式版本标识差异；API、CLI 和行为契约仍冻结到
 Oracle 1.2.2。
 
 ## 3. 副作用、日志和异常契约

@@ -184,7 +184,7 @@ def test_module_and_cli_imports_in_candidate_environment():
         check=False,
     )
     assert result.returncode == 0, result.stderr
-    assert "0.1.0" in result.stdout
+    assert "0.1.1" in result.stdout
 
     from dotenv.cli import cli
 

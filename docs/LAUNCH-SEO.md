@@ -61,9 +61,9 @@ preview。文件为 1280×640 PNG、低于 1 MB；图片只表达项目名、兼
 1. 公开仓库存在，默认分支为 `main`，README、许可证、第三方通知可访问；
 2. GitHub Actions 的 Linux、macOS、Windows wheel 构建和安装验证通过；
 3. release wheel 在独立环境中再次通过完整上游测试；
-4. PyPI 名称、Trusted Publishing 和 `0.1.0` 发布已完成；
+4. PyPI 名称、Trusted Publishing 和 `0.1.1` 正式发布已完成；
 5. PyPI 页面上的描述、项目链接、许可证和安装命令实际可用；
-6. 发布仍称 pre-release；不得把 Linux 单机 benchmark 外推成跨平台性能结论。
+6. GitHub Release 必须为 formal release；不得把 Linux 单机 benchmark 外推成跨平台性能结论。
 
 ## 首发内容资产
 

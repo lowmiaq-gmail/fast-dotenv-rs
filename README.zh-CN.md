@@ -48,10 +48,10 @@ macOS/Windows 或全部业务场景的结论。完整输入、命令和限制见
 
 ## 当前状态
 
-`0.1.0` 已发布到 PyPI，并创建了带校验文件的 GitHub pre-release。
-[正式发布流水线 #31520894781](https://github.com/lowmiaq-gmail/fast-dotenv-rs/actions/runs/31520894781)
-构建了五个平台 wheel 和一个 sdist，通过 Trusted Publishing 上传，再分别从公共
-PyPI 回装并运行完整上游兼容性测试；所有发布任务均通过。
+`0.1.1` 是正式发布版本。它把 Click 改为默认依赖，使普通公网安装立即提供完整
+`dotenv` CLI。发布流水线构建五个平台 wheel 和一个 sdist，通过 Trusted Publishing
+发布同一组不可变产物，再从公共 PyPI 普通安装并运行完整上游兼容性测试，最后创建
+正式 GitHub Release。
 本地 Linux x86-64 / CPython 3.12 的完整上游验收入口已经通过：
 
 ```text
@@ -72,7 +72,7 @@ PyPI 回装并运行完整上游兼容性测试；所有发布任务均通过。
 从 PyPI 安装：
 
 ```bash
-python -m pip install "fast-dotenv-rs[cli]==0.1.0"
+python -m pip install "fast-dotenv-rs==0.1.1"
 ```
 
 业务代码仍然使用 `import dotenv`。如需从源码构建：
@@ -81,7 +81,6 @@ python -m pip install "fast-dotenv-rs[cli]==0.1.0"
 python -m venv .venv
 source .venv/bin/activate       # Windows: .venv\\Scripts\\activate
 python -m pip install -U pip maturin
-python -m pip install "click>=5" # 使用 dotenv CLI 时需要
 maturin develop --release
 ```
 
@@ -142,7 +141,7 @@ config = dotenv_values(stream=...)    # 也支持文本 stream
 
 ## CLI
 
-安装 `click` 后，命令名不变：
+普通安装后命令名不变：
 
 ```bash
 dotenv list

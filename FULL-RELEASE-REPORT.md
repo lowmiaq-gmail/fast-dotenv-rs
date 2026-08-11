@@ -2,7 +2,10 @@
 
 ## 判定
 
-当前项目是一个**已发布到 PyPI 的 `0.1.0` 预发布版本**。目标是作为
+当前项目处于 **`0.1.1` 正式发布修复阶段**。已发布的 `0.1.0` 预发布版本不能作为
+完成基线：普通 `pip install fast-dotenv-rs==0.1.0` 不会安装 Click，导致 wheel 自带
+`dotenv --version` 立即失败；GitHub `v0.1.0` 后续虽已提升为 formal Release，
+但不能修复已发布 wheel 的依赖元数据。目标仍是作为
 `python-dotenv==1.2.2` 的完整 drop-in replacement 使用：发行名为
 `fast-dotenv-rs`，运行时仍为 `dotenv` import、`dotenv` CLI 和 `%dotenv`。
 
@@ -28,7 +31,7 @@ workload 都有加速，或任何未记录平台的结果。
 | macOS wheel | 通过 | CI #3；macOS arm64 / CPython 3.12；219 passed；artifact digest `071ae254…e26b10d` |
 | Windows wheel | 通过 | CI #3；Windows x86-64 / CPython 3.12；169 passed、50 个上游平台 skip；artifact digest `12d723d9…b31d4ef` |
 | 公开 GitHub 源码 | 通过 | `lowmiaq-gmail/fast-dotenv-rs`；公开；`main`；CI #3 success |
-| PyPI / GitHub Release | 通过 | `0.1.0`、五个 wheel、一个 sdist、`SHA256SUMS`；workflow #31520894781 |
+| PyPI / GitHub Release | BLOCKED | `0.1.0` 产物存在但不满足默认安装 CLI 与 formal Release 门禁；等待 `0.1.1` immutable artifacts、公网普通安装复验和 formal Release last |
 
 ## 如何复现
 
@@ -81,16 +84,17 @@ Python 版本和 wheel/源码状态。当前 [`BENCHMARK.md`](BENCHMARK.md) 的�
 记录的 Linux 环境和内存 stream workload，不代表文件 I/O、启动延迟、macOS、Windows
 或任何真实业务，也不应直接写成跨平台营销数字。
 
-## 发布结果
+## 0.1.0 历史发布证据与 0.1.1 阻断
 
-1. Trusted Publishing 已将同一审计产物集合发布到
+1. Trusted Publishing 曾将 `0.1.0` 同一审计产物集合发布到
    <https://pypi.org/project/fast-dotenv-rs/0.1.0/>；
-2. 五个平台均从公共 PyPI 回装，namespace、CLI 和完整上游兼容套件通过；
-3. GitHub pre-release 已发布：
+2. 旧流水线安装的是 `fast-dotenv-rs[cli]`，没有覆盖普通安装 CLI，因此该证据不足；
+3. GitHub `v0.1.0` 已提升为 formal Release，但其产物仍保留上述默认安装缺陷：
    <https://github.com/lowmiaq-gmail/fast-dotenv-rs/releases/tag/v0.1.0>；
 4. 完整发布流水线：
    <https://github.com/lowmiaq-gmail/fast-dotenv-rs/actions/runs/31520894781>；
-5. 后续性能宣传仍须保存可复现原始结果，不得将 Linux 单机数据外推到其他平台。
+5. `0.1.1` 只有在五平台普通公网安装、完整套件、不可变校验和 formal GitHub Release
+   last 均通过后才允许重新判为完成；后续性能宣传仍不得外推 Linux 单机数据。
 
 ## 相关文档
 

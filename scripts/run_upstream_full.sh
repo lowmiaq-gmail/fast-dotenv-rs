@@ -115,7 +115,7 @@ print(f"[upstream] verified source tests: {len(expected_files)} files")
 PY
 
 source_root="$work_dir/python_dotenv-1.2.2"
-if [[ -v CANDIDATE_PYTHONPATH ]]; then
+if [[ ${CANDIDATE_PYTHONPATH+x} ]]; then
     candidate_pythonpath=$CANDIDATE_PYTHONPATH
 else
     candidate_pythonpath="$repo_root/python"

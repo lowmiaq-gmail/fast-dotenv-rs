@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.1 — formal release
+
+- 修复 `pip install fast-dotenv-rs==0.1.0` 后 `dotenv --version` 因缺少 Click 立即失败的问题；
+- 将 `click>=5.0` 纳入默认依赖，同时保留空 `cli` extra 兼容旧安装命令；
+- fresh-wheel 与 public-reinstall 门禁改为安装基础包后直接验证 CLI；
+- GitHub Release 改为正式 release，并把 description、homepage、topics 与 monitoring 纳入 fail-closed 门禁。
+
 ## 0.1.0 — pre-release
 
 本版本已发布到 PyPI，并创建 GitHub pre-release。发行名为 `fast-dotenv-rs`；安装后

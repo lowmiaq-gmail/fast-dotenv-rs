@@ -14,7 +14,7 @@ from typing import Any
 
 REPOSITORY = "lowmiaq-gmail/fast-dotenv-rs"
 PACKAGE = "fast-dotenv-rs"
-VERSION = "0.1.0"
+VERSION = "0.1.1"
 EXPECTED_DESCRIPTION = (
     "Fast Rust-backed drop-in replacement for python-dotenv 1.2.2, "
     "built with PyO3 and Maturin."
@@ -95,6 +95,7 @@ def collect() -> dict[str, Any]:
             "description_matches": repository.get("description") == EXPECTED_DESCRIPTION,
             "homepage_matches": repository.get("homepage") == EXPECTED_HOMEPAGE,
             "missing_topics": sorted(EXPECTED_TOPICS - topics),
+            "formal_release": release.get("prerelease") is False,
         },
     }
 
@@ -131,6 +132,7 @@ def render_markdown(report: dict[str, Any]) -> str:
             f"| Description gate | {gate['description_matches']} |",
             f"| Homepage gate | {gate['homepage_matches']} |",
             f"| Missing topics | {', '.join(gate['missing_topics']) or 'none'} |",
+            f"| Formal release gate | {gate['formal_release']} |",
             "",
             "PyPI Stats updates daily and can be unavailable before a new project is indexed.",
         ]
@@ -157,6 +159,7 @@ def main() -> int:
         not gate["description_matches"]
         or not gate["homepage_matches"]
         or gate["missing_topics"]
+        or not gate["formal_release"]
     ):
         return 1
     return 0

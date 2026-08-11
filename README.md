@@ -33,11 +33,12 @@ importing `dotenv`.
 
 ## Status
 
-Version `0.1.0` is published on PyPI and as a verified GitHub pre-release.
-[Release workflow #31520894781](https://github.com/lowmiaq-gmail/fast-dotenv-rs/actions/runs/31520894781)
-built five native wheels and one sdist, published that immutable set through
-Trusted Publishing, then reinstalled the public PyPI package and passed the full
-upstream compatibility suite on every advertised platform.
+Version `0.1.1` is the formal release. It makes Click a default dependency so a
+plain public install provides the complete `dotenv` CLI. The release workflow
+builds five native wheels and one sdist, publishes that immutable set through
+Trusted Publishing, then reinstalls the base public package and passes the full
+upstream compatibility suite on every advertised platform before creating the
+formal GitHub Release.
 
 [GitHub Actions CI #3](https://github.com/lowmiaq-gmail/fast-dotenv-rs/actions/runs/31511953697)
 passed all four jobs:
@@ -62,7 +63,7 @@ so all three upstream IPython tests ran.
 Install the published package:
 
 ```bash
-python -m pip install "fast-dotenv-rs[cli]==0.1.0"
+python -m pip install "fast-dotenv-rs==0.1.1"
 ```
 
 Application code continues importing `dotenv`. To build from source instead:
@@ -73,7 +74,6 @@ cd fast-dotenv-rs
 python -m venv .venv
 source .venv/bin/activate       # Windows: .venv\Scripts\activate
 python -m pip install -U pip maturin
-python -m pip install "click>=5" # optional, required for the CLI
 maturin develop --release
 ```
 

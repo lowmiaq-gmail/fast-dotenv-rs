@@ -2,7 +2,7 @@
 
 The release workflow is manual and fail-closed. It publishes only after five
 native wheel lanes and one sdist lane pass, then reinstalls the public PyPI package
-on all five platforms before creating the GitHub pre-release.
+on all five platforms before creating the formal GitHub Release.
 
 ## One-time PyPI Trusted Publisher setup
 
@@ -26,14 +26,14 @@ after adding it. No API token or repository secret is used.
    their post-release wording. Remove `not published`, `no PyPI package yet`, and
    source-only installation placeholders before building.
 2. Build the sdist and wheel, then inspect their embedded `PKG-INFO` and `METADATA`.
-   The artifact audit must find `fast-dotenv-rs[cli]==<version>` and reject stale
+   The artifact audit must find `Requires-Dist: click>=5.0` and reject stale
    pre-release wording. Repository files alone are not sufficient evidence.
 3. Open **Actions → Release to PyPI → Run workflow** on `main`.
-4. Keep version `0.1.0` and enable `confirm_release`.
-5. Watch every job through `Create verified GitHub pre-release`.
+4. Keep version `0.1.1` and enable `confirm_release`.
+5. Watch every job through `Create verified formal GitHub Release`.
 6. Verify the public endpoints and compare their metadata with the audited artifacts:
-   - `https://pypi.org/project/fast-dotenv-rs/0.1.0/`
-   - `https://github.com/lowmiaq-gmail/fast-dotenv-rs/releases/tag/v0.1.0`
+   - `https://pypi.org/project/fast-dotenv-rs/0.1.1/`
+   - `https://github.com/lowmiaq-gmail/fast-dotenv-rs/releases/tag/v0.1.1`
 
 PyPI preserves the first uploaded metadata for a release. A README commit made after the
 upload does not update that release's long description. Do not delete, replace, or yank a

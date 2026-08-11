@@ -57,14 +57,15 @@ jobs:
           --artifact-dir wheelhouse
           --repository-root "$GITHUB_WORKSPACE"
           --expected-name fast-dotenv-rs
-          --expected-version 0.1.0
+          --expected-version 0.1.1
           --expected-wheels 1
           --expected-sdists 1
+          --require-metadata-text "Requires-Dist: click>=5.0"
       - name: Fresh virtualenv wheel and CLI smoke test
         run: |
           python -m venv fresh-venv
           fresh-venv/bin/python -m pip install --upgrade pip
-          fresh-venv/bin/python -m pip install --no-deps wheelhouse/*.whl
+          fresh-venv/bin/python -m pip install wheelhouse/*.whl
           fresh-venv/bin/python - <<'PY'
           from io import StringIO
 
@@ -72,9 +73,8 @@ jobs:
 
           assert dotenv.__file__
           assert dotenv.dotenv_values(stream=StringIO("A=1\n"))["A"] == "1"
-          print("fresh wheel import without optional CLI dependency: passed")
+          print("fresh wheel import with default dependencies: passed")
           PY
-          fresh-venv/bin/python -m pip install "click>=5.0"
           fresh-venv/bin/python - <<'PY'
           import subprocess
           import sys
@@ -85,9 +85,10 @@ jobs:
               capture_output=True,
               text=True,
           )
-          assert "0.1.0" in result.stdout
-          print("fresh wheel import and CLI: passed")
+          assert "0.1.1" in result.stdout
+          print("fresh default-install wheel import and CLI: passed")
           PY
+          fresh-venv/bin/python scripts/check_installed_cli.py --version 0.1.1
       - name: Upload Linux wheel and sdist
         uses: actions/upload-artifact@v7
         with:
@@ -117,10 +118,9 @@ jobs:
         run: maturin build --release --out wheelhouse
       - name: Install packaged wheel and verify import/CLI
         run: |
-          python -c "import glob, subprocess, sys; wheels = glob.glob('wheelhouse/*.whl'); assert len(wheels) == 1, wheels; subprocess.check_call([sys.executable, '-m', 'pip', 'install', '--force-reinstall', '--no-deps', wheels[0]])"
+          python -c "import glob, subprocess, sys; wheels = glob.glob('wheelhouse/*.whl'); assert len(wheels) == 1, wheels; subprocess.check_call([sys.executable, '-m', 'pip', 'install', '--force-reinstall', wheels[0]])"
           python -c "import dotenv; assert dotenv.dotenv_values(stream=__import__('io').StringIO('A=1\\n'))['A'] == '1'"
-          python -m pip install "click>=5.0"
-          python -m dotenv --version
+          python scripts/check_installed_cli.py --version 0.1.1
       - name: Complete upstream suite against installed wheel
         shell: bash
         run: |

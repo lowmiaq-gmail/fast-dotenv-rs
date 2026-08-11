@@ -4,6 +4,15 @@ Audit date: 2026-08-10
 Compatibility baseline: [`python-dotenv==1.2.2`](https://github.com/theskumar/python-dotenv/tree/v1.2.2)  
 Candidate scope: complete `dotenv` namespace, CLI, IPython integration and file/environment behavior
 
+## Capability Registry recheck — 2026-08-12
+
+Targeted `skill.sh find` and `skill.sh route` queries plus exact SSOT/consumer text searches did
+not find the previously claimed `rewrite-python-with-rust` Skill. The claim in
+`reusable/EXTRACTION-REPORT.md` is therefore **MISSING / STALE CLAIM**, not runtime evidence.
+No replacement Skill is created in this release. The remediation directly reuses the verified
+repository assets in `reusable/EXTRACTION-REPORT.md`, the isolated upstream/differential runners,
+artifact inspector, CI matrix and immutable-release topology.
+
 ## Decision vocabulary
 
 - **REUSE** — adopt directly; its tested behavior satisfies the frozen target.

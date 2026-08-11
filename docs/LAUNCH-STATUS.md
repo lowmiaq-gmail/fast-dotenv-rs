@@ -8,10 +8,10 @@ public discovery, external promotion, and monitoring are tracked separately.
 | State | Result | Evidence or blocker |
 |---|---|---|
 | Engineering | `ENGINEERING_COMPLETE` | Full pinned upstream suite and isolated differential tests pass. |
-| Distribution | `DISTRIBUTION_COMPLETE` | [PyPI 0.1.0](https://pypi.org/project/fast-dotenv-rs/0.1.0/), [GitHub v0.1.0](https://github.com/lowmiaq-gmail/fast-dotenv-rs/releases/tag/v0.1.0), and five public reinstall lanes are live. |
-| Owned-channel launch | `IN_PROGRESS` | Repository description, homepage, topics, and social preview still require public verification. |
+| Distribution | `BLOCKED_0_1_1` | [PyPI 0.1.0](https://pypi.org/project/fast-dotenv-rs/0.1.0/) 普通安装 CLI 失败；[GitHub v0.1.0](https://github.com/lowmiaq-gmail/fast-dotenv-rs/releases/tag/v0.1.0) 已提升为 formal 但不能改变 wheel 元数据。等待 `0.1.1` 五平台普通公网安装与 formal Release last。 |
+| Owned-channel launch | `OWNED_SURFACES_COMPLETE` | GitHub API 已验证 description、homepage 和 12 个 topics；Settings 页面已验证 social preview 存在。 |
 | External community launch | `NOT_APPROVED` | No external account/channel has been selected or authenticated. Draft copy is not counted as publication. |
-| Monitoring | `MONITORING_ACTIVE_PENDING_CI` | Weekly workflow is implemented; its first successful public run is required as evidence. |
+| Monitoring | `READY_FOR_0_1_1_REVERIFY` | 元数据修复后的 run 31526891482 已成功；发布后仍需以 `0.1.1` 再运行一次。 |
 
 ## Required evidence before `LAUNCH_COMPLETE`
 
