@@ -22,11 +22,11 @@ python -m dotenv run -- python app.py
 | 候选运行时命名空间 | `dotenv` |
 | 本地已验证 | Linux x86-64、CPython 3.12、完整上游目录：218 passed、1 skipped、0 failed |
 | IPython 条件 | IPython 已安装，3 个上游 IPython 测试均实际执行；唯一 skip 为上游平台条件 |
-| macOS/Windows | wheel 构建、安装和完整测试待 CI，当前没有本地通过证据 |
-| PyPI/GitHub | 尚未声称已发布；本文件不提供虚假的下载链接 |
+| macOS/Windows | CI #3 wheel 构建、安装、CLI 与上游套件通过；macOS 219 passed，Windows 169 passed / 50 平台 skip |
+| PyPI/GitHub | GitHub 源码已公开；PyPI 与 GitHub Release 尚未发布 |
 
-本地 Linux 结果是当前候选版本的证据，不是对 macOS/Windows、所有 Python 版本或所有
-应用 workload 的推断。完整测试的原始来源、hash、模块和签名见
+跨平台 CI 是当前候选版本的构建与兼容证据，不是对所有 Python 版本或真实应用
+workload 性能的推断。完整测试的原始来源、hash、模块和签名见
 [`UPSTREAM-CONTRACT.md`](UPSTREAM-CONTRACT.md)。
 
 ## 2. 兼容性矩阵
@@ -34,6 +34,7 @@ python -m dotenv run -- python app.py
 状态含义：
 
 - **LOCAL-VERIFIED**：在本地 Linux 候选环境有可复现证据；
+- **CI-VERIFIED**：公开 CI 的指定平台 wheel 已构建、安装并通过对应门禁；
 - **CI-PENDING**：实现或测试入口存在，但对应平台/安装 wheel 尚未有本地或远程证据；
 - **RELEASE-BLOCKER**：缺少该证据时不得发布“完整替代”或跨平台性能结论。
 
@@ -52,8 +53,8 @@ python -m dotenv run -- python app.py
 | `python -m dotenv` | LOCAL-VERIFIED | CLI 入口与上游 subprocess 测试 |
 | IPython `%dotenv` | LOCAL-VERIFIED | 3 项上游 IPython 测试均实际执行 |
 | Linux release wheel 安装后验证 | LOCAL-VERIFIED | fresh venv 仅安装候选 wheel；base import、CLI、完整上游 suite 通过 |
-| macOS release wheel | RELEASE-BLOCKER / CI-PENDING | macOS CI 构建、安装、上游 suite |
-| Windows release wheel | RELEASE-BLOCKER / CI-PENDING | Windows CI 构建、安装、上游 suite |
+| macOS release wheel | CI-VERIFIED | CI #3：arm64 wheel、安装、CLI、219 个上游测试 |
+| Windows release wheel | CI-VERIFIED | CI #3：x86-64 wheel、安装、CLI、169 passed / 50 平台 skip |
 | 隔离 benchmark | LOCAL-VERIFIED（仅当前 Linux 数据） | 候选/Oracle 分进程、同 workload 原始数据 |
 
 矩阵中的 LOCAL-VERIFIED 不表示“测试过之后所有未来变更仍兼容”；每个发布候选都要
@@ -130,8 +131,7 @@ bash scripts/run_upstream_full.sh
 
 ## 6. 发布判定
 
-当前判定：**Linux 本地候选 gate 通过；跨平台 release gate 待 CI；尚未发布。**
+当前判定：**Linux 本地与跨平台 CI gate 通过；GitHub 源码已公开；PyPI/Release 尚未发布。**
 
-在 macOS/Windows wheel、安装后上游测试和 IPython 条件完成前，README、CHANGELOG、
-release note 不得声称“已发布”“所有平台通过”或“普遍提速”。候选可以在内部环境
-使用，但公开发布必须附上对应 commit、wheel、测试日志和可复现 benchmark 记录。
+README、CHANGELOG 和 release note 仍不得声称“PyPI 已发布”或“跨平台普遍提速”。
+正式发布必须绑定对应 commit、wheel、测试日志和可复现 benchmark 记录。

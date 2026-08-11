@@ -2,7 +2,7 @@
 
 ## 0.1.0 — pre-release
 
-本版本尚未发布到 PyPI，也没有声称已经完成 GitHub Release。发行名为
+本版本源码已经公开，但尚未发布到 PyPI，也尚未创建 GitHub Release。发行名为
 `fast-dotenv-rs`；安装后仍使用上游兼容的 `dotenv` import 和 `dotenv` CLI。
 
 ### 已完成
@@ -24,13 +24,14 @@
 - IPython 已安装，上游 IPython 模块的 3 个测试均实际执行；唯一 skip 为上游平台条件；
 - 固定种子隔离差分通过 10,000 个随机案例，且 Oracle/Candidate 模块路径不同；
 - Linux release wheel 在 fresh venv 中通过无 Click 基础导入、CLI 和完整上游套件；
-- macOS/Windows wheel 的构建、安装和完整测试仍待 CI，不能由 Linux 结果推断；
-- 未声称 PyPI 下载地址、公开 GitHub 仓库或跨平台发布包已经存在；
+- GitHub Actions CI #3 的 Linux Python 3.10/3.12、macOS arm64、Windows x86-64
+  四个矩阵任务全部通过；macOS 为 219 passed，Windows 为 169 passed / 50 平台 skip；
+- CI 已生成 Linux、macOS 和 Windows artifacts；它们不是 PyPI 发布包，也未提供虚构的
+  PyPI 安装地址；
 - `python-dotenv==1.2.2` 与本项目不能在同一个环境安装，必须用独立 Oracle 环境做
   对比，否则顶层 `dotenv` 包和 CLI 会相互覆盖。
 
 ### 后续发布门禁
 
-只有在 Linux、macOS、Windows 的安装 wheel 验证，完整上游测试（除上游明确 skip），
-差分测试、许可证检查和隔离 benchmark 都有可复现记录后，才可以把本版本标成正式
-release 或发布到 PyPI。
+最终 PyPI 发布前仍需锁定同一受验 commit 和 artifacts、配置 Trusted Publishing、
+建立 GitHub pre-release，并在 PyPI 安装后重复 namespace、CLI 与上游兼容 smoke test。

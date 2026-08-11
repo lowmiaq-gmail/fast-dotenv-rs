@@ -2,13 +2,13 @@
 
 ## 判定
 
-当前项目是一个**未发布的预发布候选**。目标是作为
+当前项目是一个**已公开源码、未发布到 PyPI 的预发布候选**。目标是作为
 `python-dotenv==1.2.2` 的完整 drop-in replacement 使用：发行名为
 `fast-dotenv-rs`，运行时仍为 `dotenv` import、`dotenv` CLI 和 `%dotenv`。
 
-当前证据支持：Linux x86-64 / CPython 3.12 上候选实现通过完整上游验收入口。
-当前证据不支持：macOS/Windows wheel 已通过、PyPI/GitHub 已发布、所有应用 workload
-都有加速，或任何未记录平台的结果。
+当前证据支持：Linux x86-64、macOS arm64 和 Windows x86-64 的 CI 构建、wheel
+安装与上游兼容门禁通过。当前证据不支持：PyPI 或 GitHub Release 已发布、所有应用
+workload 都有加速，或任何未记录平台的结果。
 
 ## 已验证证据
 
@@ -25,9 +25,10 @@
 | 隔离差分 | 通过 | seed `20260811`；10,000 个随机案例；Oracle/Candidate 不同进程和模块路径 |
 | 本地 benchmark | 通过 | 3 个输入规模，语义先校验；本机中位数提速 15.957×–88.609× |
 | Linux wheel | 通过 | fresh venv 仅安装候选 wheel；基础 import 无 Click；完整上游套件再次 218 passed、1 skipped |
-| macOS wheel | 待 CI | 没有本地或远程通过证据 |
-| Windows wheel | 待 CI | 没有本地或远程通过证据 |
-| PyPI/GitHub 发布 | 未发布 | 本报告不提供虚构的下载地址或 release 链接 |
+| macOS wheel | 通过 | CI #3；macOS arm64 / CPython 3.12；219 passed；artifact digest `071ae254…e26b10d` |
+| Windows wheel | 通过 | CI #3；Windows x86-64 / CPython 3.12；169 passed、50 个上游平台 skip；artifact digest `12d723d9…b31d4ef` |
+| 公开 GitHub 源码 | 通过 | `lowmiaq-gmail/fast-dotenv-rs`；公开；`main`；CI #3 success |
+| PyPI / GitHub Release | 未发布 | 本报告不提供虚构的 PyPI 下载地址或 release 链接 |
 
 ## 如何复现
 
@@ -82,10 +83,10 @@ Python 版本和 wheel/源码状态。当前 [`BENCHMARK.md`](BENCHMARK.md) 的�
 
 ## 发布前剩余工作
 
-1. 在 macOS 和 Windows CI 构建并安装 wheel，至少重复 namespace、import 和 CLI smoke；
-2. 对 release wheel 运行隔离 benchmark，保存原始结果，不将本地单机数据外推；
-3. 核对许可证、版本、README、CHANGELOG、artifact hash 和最终发布仓库地址；
-4. 所有门禁完成后，才可以创建公开 GitHub Release 或上传 PyPI。
+1. 对最终 release wheel 运行隔离 benchmark，保存原始结果，不将 Linux 单机数据外推；
+2. 核对最终版本、README、CHANGELOG、artifact hash 与 PyPI Trusted Publishing；
+3. 创建 GitHub pre-release，并从同一受验提交发布 PyPI，而不是重新构建未验产物；
+4. PyPI 安装后再做一次独立 namespace、CLI 和上游兼容 smoke test。
 
 ## 相关文档
 

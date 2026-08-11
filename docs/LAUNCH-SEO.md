@@ -54,6 +54,9 @@ preview。文件为 1280×640 PNG、低于 1 MB；图片只表达项目名、兼
 
 ## 发布门禁
 
+当前进度（2026-08-11）：公开仓库与跨平台 CI 已通过；PyPI、GitHub Release、Topics、
+仓库描述和 social preview 的站点配置仍待完成。
+
 1. 公开仓库存在，默认分支为 `main`，README、许可证、第三方通知可访问；
 2. GitHub Actions 的 Linux、macOS、Windows wheel 构建和安装验证通过；
 3. release wheel 在独立环境中再次通过完整上游测试；

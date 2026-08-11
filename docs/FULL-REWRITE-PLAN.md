@@ -94,10 +94,10 @@ The project is complete only when all of these gates pass together:
     filesystem fixtures, log/exception capture, and Rust no-panic fuzz input.
   - Verify: zero unexplained differences and no panic.
 
-- [ ] **8. Package and test release wheels**
+- [x] **8. Package and test release wheels**
   - Build: Maturin abi3 wheels, console script, licenses/notices, SBOM, CI
     artifacts, and installed-wheel test jobs. Linux fresh-wheel validation is complete.
-  - Verify: macOS and Windows jobs remain pending until the public CI runs.
+  - Verify: public CI #3 passed Linux Python 3.10/3.12, macOS arm64, and Windows x86-64.
 
 - [x] **9. Benchmark without weakening compatibility**
   - Build: installed-wheel benchmarks for small, medium, and large files,
