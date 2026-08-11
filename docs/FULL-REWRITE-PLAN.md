@@ -1,5 +1,11 @@
 # Full python-dotenv replacement plan
 
+> **文档状态：历史实施计划。**
+>
+> 本文件记录完整重写阶段当时的实施路径和 checklist，不再承担“当前做到哪”的职责。
+> 当前项目进度统一看仓库根目录 `PROGRESS.md`；当前发布/推广状态看 `docs/LAUNCH-STATUS.md`。
+> 如果本文件的未完成项与实际代码、CI、GitHub Release 或其他公开证据冲突，以实际证据为准，不要重新执行已经完成的工作。
+
 ## Source of truth
 
 - Oracle: `python-dotenv==1.2.2` from the official PyPI sdist.
@@ -115,6 +121,8 @@ The project is complete only when all of these gates pass together:
     and run CI.
   - Verify: the public commit matches the locally accepted commit and all
     required remote checks pass.
+
+> 上面的第 11 项保留原始历史记录，不再用于判断当前状态。当前状态请看 `PROGRESS.md`。
 
 ## Parallel execution lanes
 
