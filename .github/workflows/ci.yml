@@ -1,0 +1,188 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: test / Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+          components: rustfmt, clippy
+      - name: Install test and packaging tooling
+        run: python -m pip install --upgrade pip maturin pytest click ipython
+      - name: Rust format
+        run: cargo fmt --all -- --check
+      - name: Rust clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
+      - name: Rust tests
+        run: cargo test --all-targets
+      - name: Build development extension
+        run: maturin develop --release
+      - name: Candidate drop-in and differential tests
+        run: PYTHONPATH=python python -m pytest -q tests
+      - name: Complete pinned python-dotenv 1.2.2 suite
+        run: bash scripts/run_upstream_full.sh
+      - name: Isolated 10,000-case differential gate
+        run: PYTHONPATH=python python scripts/run_differential.py
+      - name: Build wheel and source distribution
+        run: |
+          rm -rf wheelhouse
+          mkdir -p wheelhouse
+          maturin build --release --out wheelhouse
+          maturin sdist --out wheelhouse
+      - name: Audit wheel and sdist contents
+        env:
+          REPOSITORY_ROOT: ${{ github.workspace }}
+        run: |
+          python - wheelhouse "$REPOSITORY_ROOT" <<'PY'
+          import pathlib
+          import sys
+          import tarfile
+          import zipfile
+
+          artifact_dir = pathlib.Path(sys.argv[1])
+          repository_root = pathlib.Path(sys.argv[2]).resolve()
+          forbidden_text = (
+              str(repository_root),
+              "/workspace/",
+              "/home/runner/work/",
+              "\\\\Users\\\\",
+              "target/debug",
+              "target/release",
+          )
+
+          wheels = sorted(artifact_dir.glob("*.whl"))
+          sdists = sorted(artifact_dir.glob("*.tar.gz"))
+          assert len(wheels) == 1, wheels
+          assert len(sdists) == 1, sdists
+
+          with zipfile.ZipFile(wheels[0]) as archive:
+              names = archive.namelist()
+              assert all(
+                  not pathlib.PurePosixPath(name).is_absolute()
+                  and ".." not in pathlib.PurePosixPath(name).parts
+                  for name in names
+              )
+              assert not any(
+                  name.endswith((".pyc", ".pyo"))
+                  or "/tests/" in f"/{name}"
+                  or "/target/" in f"/{name}"
+                  for name in names
+              ), names
+              for name in names:
+                  data = archive.read(name)
+                  if name.endswith((".py", ".json", ".txt", ".md")):
+                      text = data.decode("utf-8", errors="ignore")
+                      assert not any(value in text for value in forbidden_text), name
+              sboms = [name for name in names if "/sboms/" in f"/{name}"]
+              for name in sboms:
+                  text = archive.read(name).decode("utf-8", errors="ignore")
+                  assert not any(value in text for value in forbidden_text), name
+
+          with tarfile.open(sdists[0], "r:gz") as archive:
+              names = archive.getnames()
+              assert all(
+                  not pathlib.PurePosixPath(name).is_absolute()
+                  and ".." not in pathlib.PurePosixPath(name).parts
+                  for name in names
+              )
+              assert not any(
+                  "/target/" in f"/{name}"
+                  or "/.venv/" in f"/{name}"
+                  or "/__pycache__/" in f"/{name}"
+                  for name in names
+              ), names
+              for member in archive.getmembers():
+                  if member.isfile() and member.name.endswith((".py", ".json", ".txt", ".md")):
+                      text = archive.extractfile(member).read().decode("utf-8", errors="ignore")
+                      assert not any(value in text for value in forbidden_text), member.name
+          print("artifact audit: wheel/sdist paths and local-path leakage passed")
+          PY
+      - name: Fresh virtualenv wheel and CLI smoke test
+        run: |
+          python -m venv fresh-venv
+          fresh-venv/bin/python -m pip install --upgrade pip
+          fresh-venv/bin/python -m pip install --no-deps wheelhouse/*.whl
+          fresh-venv/bin/python - <<'PY'
+          from io import StringIO
+
+          import dotenv
+
+          assert dotenv.__file__
+          assert dotenv.dotenv_values(stream=StringIO("A=1\n"))["A"] == "1"
+          print("fresh wheel import without optional CLI dependency: passed")
+          PY
+          fresh-venv/bin/python -m pip install "click>=5.0"
+          fresh-venv/bin/python - <<'PY'
+          import subprocess
+          import sys
+
+          result = subprocess.run(
+              [sys.executable, "-m", "dotenv", "--version"],
+              check=True,
+              capture_output=True,
+              text=True,
+          )
+          assert "0.1.0" in result.stdout
+          print("fresh wheel import and CLI: passed")
+          PY
+      - name: Upload Linux wheel and sdist
+        uses: actions/upload-artifact@v4
+        with:
+          name: packages-linux-python-${{ matrix.python-version }}
+          path: wheelhouse/*
+
+  packaging:
+    name: wheel / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            python-version: "3.12"
+          - os: windows-latest
+            python-version: "3.12"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+      - name: Install build tooling
+        run: python -m pip install --upgrade pip maturin
+      - name: Build release wheel
+        run: maturin build --release --out wheelhouse
+      - name: Install packaged wheel and verify import/CLI
+        run: |
+          python -m pip install --force-reinstall --no-deps wheelhouse/*.whl
+          python -c "import dotenv; assert dotenv.dotenv_values(stream=__import__('io').StringIO('A=1\\n'))['A'] == '1'"
+          python -m pip install "click>=5.0"
+          python -m dotenv --version
+      - name: Complete upstream suite against installed wheel
+        shell: bash
+        run: |
+          python -m pip install "pytest>=8,<9" "ipython>=8"
+          candidate_root=$(python -c 'import site; print(site.getsitepackages()[0])')
+          CANDIDATE_PYTHONPATH='' CANDIDATE_EXPECTED_ROOT="$candidate_root" PYTHON=python bash scripts/run_upstream_full.sh
+      - name: Upload packaged wheel
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheel-${{ matrix.os }}
+          path: wheelhouse/*.whl

@@ -1,0 +1,14 @@
+/target/
+/.venv/
+/.pytest_cache/
+__pycache__/
+*.so
+*.pyd
+*.dylib
+dist/
+.env
+.env.*
+!.env.example
+.envrc
+*.pem
+*.key

@@ -1,0 +1,53 @@
+[build-system]
+requires = ["maturin>=1.9,<2"]
+build-backend = "maturin"
+
+[project]
+name = "fast-dotenv-rs"
+version = "0.1.0"
+description = "Fast Rust-backed drop-in replacement for python-dotenv 1.2.2"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT AND BSD-3-Clause"
+license-files = ["LICENSE", "licenses/*.txt"]
+authors = [{ name = "fast-dotenv-rs contributors" }]
+keywords = ["dotenv", "python-dotenv", "env", "parser", "pyo3", "rust", "environment-variables", "drop-in-replacement"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Rust",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Topic :: System :: Systems Administration",
+]
+
+[project.urls]
+Homepage = "https://github.com/lowmiaq-gmail/fast-dotenv-rs"
+Repository = "https://github.com/lowmiaq-gmail/fast-dotenv-rs"
+Issues = "https://github.com/lowmiaq-gmail/fast-dotenv-rs/issues"
+Changelog = "https://github.com/lowmiaq-gmail/fast-dotenv-rs/blob/main/CHANGELOG.md"
+
+[project.optional-dependencies]
+cli = [
+  "click>=5.0",
+]
+test = [
+  "pytest>=8,<9",
+  "click>=5.0",
+  "ipython>=8",
+]
+
+[project.scripts]
+dotenv = "dotenv.__main__:cli"
+
+[tool.maturin]
+bindings = "pyo3"
+python-source = "python"
+module-name = "dotenv._core"
+features = ["pyo3/extension-module"]
+
+[tool.maturin.sbom]
+rust = false
+
+[tool.pytest.ini_options]
+addopts = "-ra"
+testpaths = ["tests"]
