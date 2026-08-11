@@ -1,1 +1,29 @@
-m«ë
+name: Launch monitoring
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 16 * * 2"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/launch-monitor.yml"
+      - "scripts/report_launch_metrics.py"
+
+permissions:
+  contents: read
+
+jobs:
+  public-signals:
+    name: Verify public launch surfaces
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Collect public distribution and adoption signals
+        run: python scripts/report_launch_metrics.py --strict-discovery | tee launch-metrics.md
+      - name: Publish evidence in the workflow summary
+        if: always()
+        run: test -f launch-metrics.md && cat launch-metrics.md >> "$GITHUB_STEP_SUMMARY" || true
