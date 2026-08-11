@@ -173,6 +173,35 @@ path.write_text(
 path.chmod(0o755)
 PY
 
+# test_run_with_command_flags uses `printenv --version` only as a sentinel to
+# prove that `--version` reaches the child process. GNU printenv supports that
+# flag; BSD printenv on macOS rejects it before candidate behavior can be
+# assessed. Keep the complete upstream test selected and provide a transparent
+# compatibility fixture only when the host command lacks the sentinel flag.
+# All ordinary printenv calls still delegate to the host executable.
+host_printenv=$(command -v printenv)
+if ! "$host_printenv" --version >/dev/null 2>&1; then
+    "$python_bin" - "$bin_dir/printenv" "$host_printenv" <<'PY'
+import pathlib
+import shlex
+import sys
+
+path = pathlib.Path(sys.argv[1])
+host_printenv = shlex.quote(sys.argv[2])
+path.write_text(
+    "#!/bin/sh\n"
+    "if [ \"$#\" -eq 1 ] && [ \"$1\" = \"--version\" ]; then\n"
+    "  printf '%s\\n' 'printenv (cross-platform upstream test fixture)'\n"
+    "  exit 0\n"
+    "fi\n"
+    f"exec {host_printenv} \"$@\"\n",
+    encoding="utf-8",
+)
+path.chmod(0o755)
+PY
+    echo "[upstream] host printenv lacks --version; installed a transparent test fixture."
+fi
+
 old_path=${PATH:-}
 PATH="$bin_dir:$old_path" \
 PYTHONPATH="$candidate_pythonpath" \
