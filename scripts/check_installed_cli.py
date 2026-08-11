@@ -8,6 +8,7 @@ import pathlib
 import shutil
 import subprocess
 import sys
+import sysconfig
 
 
 def check(command: list[str], version: str) -> None:
@@ -19,7 +20,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--version", required=True)
     args = parser.parse_args()
-    scripts_dir = pathlib.Path(sys.executable).parent
+    scripts_dir = pathlib.Path(sysconfig.get_path("scripts"))
     entry = shutil.which("dotenv", path=str(scripts_dir))
     assert entry is not None, f"dotenv console script not found under {scripts_dir}"
     check([sys.executable, "-m", "dotenv", "--version"], args.version)

@@ -33,12 +33,12 @@ importing `dotenv`.
 
 ## Status
 
-Version `0.1.1` is the formal release. It makes Click a default dependency so a
+Version `0.1.1` is the formal-release line. It makes Click a default dependency so a
 plain public install provides the complete `dotenv` CLI. The release workflow
 builds five native wheels and one sdist, publishes that immutable set through
 Trusted Publishing, then reinstalls the base public package and passes the full
 upstream compatibility suite on every advertised platform before creating the
-formal GitHub Release.
+formal GitHub Release. Until those public links exist, the release remains blocked.
 
 [GitHub Actions CI #3](https://github.com/lowmiaq-gmail/fast-dotenv-rs/actions/runs/31511953697)
 passed all four jobs:

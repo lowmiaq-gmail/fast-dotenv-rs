@@ -48,10 +48,10 @@ macOS/Windows 或全部业务场景的结论。完整输入、命令和限制见
 
 ## 当前状态
 
-`0.1.1` 是正式发布版本。它把 Click 改为默认依赖，使普通公网安装立即提供完整
+`0.1.1` 是正式发布线。它把 Click 改为默认依赖，使普通公网安装立即提供完整
 `dotenv` CLI。发布流水线构建五个平台 wheel 和一个 sdist，通过 Trusted Publishing
 发布同一组不可变产物，再从公共 PyPI 普通安装并运行完整上游兼容性测试，最后创建
-正式 GitHub Release。
+正式 GitHub Release。在这些公网证据出现前，发布仍是阻断状态。
 本地 Linux x86-64 / CPython 3.12 的完整上游验收入口已经通过：
 
 ```text

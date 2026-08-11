@@ -108,7 +108,7 @@ jobs:
       - name: Wheel namespace and CLI smoke test
         run: >-
           python -c "from io import StringIO; import dotenv, subprocess, sys;
-          assert dotenv.dotenv_values(stream=StringIO('A=1\n')) == {'A': '1'};
+          assert dotenv.dotenv_values(stream=StringIO('A=1' + chr(10))) == {'A': '1'};
           result=subprocess.run([sys.executable, '-m', 'dotenv', '--version'], check=True, capture_output=True, text=True);
           assert '${{ inputs.version }}' in result.stdout, result.stdout"
       - name: Verify the installed console script belongs to this Python
@@ -142,7 +142,7 @@ jobs:
         run: |
           python -m pip wheel --no-deps --wheel-dir sdist-wheel dist/*.tar.gz
           python -m pip install --force-reinstall sdist-wheel/*.whl
-          python -c "from io import StringIO; import dotenv, subprocess, sys; assert dotenv.dotenv_values(stream=StringIO('A=1\n')) == {'A': '1'}; subprocess.run([sys.executable, '-m', 'dotenv', '--version'], check=True)"
+          python -c "from io import StringIO; import dotenv, subprocess, sys; assert dotenv.dotenv_values(stream=StringIO('A=1' + chr(10))) == {'A': '1'}; subprocess.run([sys.executable, '-m', 'dotenv', '--version'], check=True)"
           python scripts/check_installed_cli.py --version "${{ inputs.version }}"
       - name: Audit sdist
         run: >-
@@ -254,7 +254,7 @@ jobs:
         run: >-
           python -c "from io import StringIO; import dotenv, subprocess, sys;
           assert 'site-packages' in dotenv.__file__ or 'dist-packages' in dotenv.__file__, dotenv.__file__;
-          assert dotenv.dotenv_values(stream=StringIO('A=1\n')) == {'A': '1'};
+          assert dotenv.dotenv_values(stream=StringIO('A=1' + chr(10))) == {'A': '1'};
           result=subprocess.run([sys.executable, '-m', 'dotenv', '--version'], check=True, capture_output=True, text=True);
           assert '${{ inputs.version }}' in result.stdout, result.stdout"
       - name: Public console-script ownership smoke test

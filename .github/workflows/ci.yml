@@ -119,7 +119,7 @@ jobs:
       - name: Install packaged wheel and verify import/CLI
         run: |
           python -c "import glob, subprocess, sys; wheels = glob.glob('wheelhouse/*.whl'); assert len(wheels) == 1, wheels; subprocess.check_call([sys.executable, '-m', 'pip', 'install', '--force-reinstall', wheels[0]])"
-          python -c "import dotenv; assert dotenv.dotenv_values(stream=__import__('io').StringIO('A=1\\n'))['A'] == '1'"
+          python -c "import dotenv; actual=dotenv.dotenv_values(stream=__import__('io').StringIO('A=1' + chr(10))); assert actual == {'A': '1'}, actual"
           python scripts/check_installed_cli.py --version 0.1.1
       - name: Complete upstream suite against installed wheel
         shell: bash
