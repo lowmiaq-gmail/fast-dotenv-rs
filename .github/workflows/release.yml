@@ -1,9 +1,6 @@
 name: Release to PyPI
 
 on:
-  push:
-    branches:
-      - release/0.1.0
   workflow_dispatch:
     inputs:
       version:
@@ -21,7 +18,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: release-${{ inputs.version || '0.1.0' }}
+  group: release-${{ inputs.version }}
   cancel-in-progress: false
 
 jobs:
@@ -38,19 +35,13 @@ jobs:
       - name: Require main and explicit confirmation
         env:
           CONFIRMED: ${{ inputs.confirm_release }}
-          EVENT_NAME: ${{ github.event_name }}
         run: |
-          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
-            test "$GITHUB_REF" = "refs/heads/main"
-            test "$CONFIRMED" = "true"
-          else
-            test "$EVENT_NAME" = "push"
-            test "$GITHUB_REF" = "refs/heads/release/0.1.0"
-          fi
+          test "$GITHUB_REF" = "refs/heads/main"
+          test "$CONFIRMED" = "true"
       - id: version
         name: Match Python, Rust, and requested versions
         env:
-          REQUESTED_VERSION: ${{ inputs.version || '0.1.0' }}
+          REQUESTED_VERSION: ${{ inputs.version }}
         run: |
           python - <<'PY'
           import os
@@ -119,7 +110,7 @@ jobs:
           python -c "from io import StringIO; import dotenv, subprocess, sys;
           assert dotenv.dotenv_values(stream=StringIO('A=1\n')) == {'A': '1'};
           result=subprocess.run([sys.executable, '-m', 'dotenv', '--version'], check=True, capture_output=True, text=True);
-          assert '${{ inputs.version || '0.1.0' }}' in result.stdout, result.stdout"
+          assert '${{ inputs.version }}' in result.stdout, result.stdout"
       - name: Complete pinned upstream suite against wheel
         shell: bash
         run: |
@@ -156,7 +147,7 @@ jobs:
           --artifact-dir dist
           --repository-root "$GITHUB_WORKSPACE"
           --expected-name fast-dotenv-rs
-          --expected-version "${{ inputs.version || '0.1.0' }}"
+          --expected-version "${{ inputs.version }}"
           --expected-wheels 0
           --expected-sdists 1
       - name: Upload verified sdist
@@ -183,7 +174,7 @@ jobs:
           --artifact-dir dist
           --repository-root "$GITHUB_WORKSPACE"
           --expected-name fast-dotenv-rs
-          --expected-version "${{ inputs.version || '0.1.0' }}"
+          --expected-version "${{ inputs.version }}"
           --expected-wheels 5
           --expected-sdists 1
       - name: Upload the exact publish set
@@ -201,7 +192,7 @@ jobs:
     runs-on: ubuntu-22.04
     environment:
       name: pypi
-      url: https://pypi.org/project/fast-dotenv-rs/${{ inputs.version || '0.1.0' }}/
+      url: https://pypi.org/project/fast-dotenv-rs/${{ inputs.version }}/
     permissions:
       id-token: write
     steps:
@@ -239,7 +230,7 @@ jobs:
           python-version: "3.12"
       - name: Install the public PyPI package with retry for index propagation
         env:
-          RELEASE_VERSION: ${{ inputs.version || '0.1.0' }}
+          RELEASE_VERSION: ${{ inputs.version }}
         run: >-
           python -c "import os, subprocess, sys, time;
           spec='fast-dotenv-rs[cli]==' + os.environ['RELEASE_VERSION'];
@@ -252,7 +243,7 @@ jobs:
           assert 'site-packages' in dotenv.__file__ or 'dist-packages' in dotenv.__file__, dotenv.__file__;
           assert dotenv.dotenv_values(stream=StringIO('A=1\n')) == {'A': '1'};
           result=subprocess.run([sys.executable, '-m', 'dotenv', '--version'], check=True, capture_output=True, text=True);
-          assert '${{ inputs.version || '0.1.0' }}' in result.stdout, result.stdout"
+          assert '${{ inputs.version }}' in result.stdout, result.stdout"
       - name: Complete pinned upstream suite against public PyPI install
         shell: bash
         run: |
