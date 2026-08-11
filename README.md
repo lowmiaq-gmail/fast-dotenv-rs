@@ -160,6 +160,7 @@ and limitations.
 - [`docs/UPSTREAM-CONTRACT.md`](docs/UPSTREAM-CONTRACT.md) — pinned upstream contract;
 - [`docs/REUSE-AUDIT.md`](docs/REUSE-AUDIT.md) — reuse and license audit;
 - [`docs/LAUNCH-SEO.md`](docs/LAUNCH-SEO.md) — launch, discovery, and adoption plan.
+- [`docs/LAUNCH-STATUS.md`](docs/LAUNCH-STATUS.md) — evidence-backed public launch status and review checkpoints.
 
 ## License
 
