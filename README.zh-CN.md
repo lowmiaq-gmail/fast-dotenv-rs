@@ -69,7 +69,7 @@ macOS/Windows 或全部业务场景的结论。完整输入、命令和限制见
 
 ## 安装
 
-从 PyPI 安装：
+`0.1.1` 公网发布完成后，从 PyPI 安装：
 
 ```bash
 python -m pip install "fast-dotenv-rs==0.1.1"

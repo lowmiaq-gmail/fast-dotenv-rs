@@ -60,7 +60,7 @@ so all three upstream IPython tests ran.
 
 ## Installation
 
-Install the published package:
+After the `0.1.1` public release exists, install the package with:
 
 ```bash
 python -m pip install "fast-dotenv-rs==0.1.1"
