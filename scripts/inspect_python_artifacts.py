@@ -53,13 +53,17 @@ def main() -> None:
     filenames = [path.name for path in [*wheels, *sdists]]
     assert len(filenames) == len(set(filenames)), filenames
 
+    # Assemble generic build-root patterns at runtime so this auditor can itself
+    # be shipped in an sdist without matching its own source text.
+    slash = "/"
+    backslash = "\\"
     forbidden_text = (
         str(repository_root),
-        "/workspace/",
-        "/home/runner/work/",
-        "\\\\Users\\\\",
-        "target/debug",
-        "target/release",
+        slash + "workspace" + slash,
+        slash + "home" + slash + "runner" + slash + "work" + slash,
+        backslash * 2 + "Users" + backslash * 2,
+        "target" + slash + "debug",
+        "target" + slash + "release",
     )
 
     for wheel in wheels:
