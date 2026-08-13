@@ -8,7 +8,10 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/launch-monitor.yml"
+      - "reusable/replacement-fleet.json"
+      - "scripts/check_replacement_fleet.py"
       - "scripts/report_launch_metrics.py"
+      - "tests/test_replacement_fleet.py"
 
 permissions:
   contents: read
@@ -30,3 +33,68 @@ jobs:
       - name: Publish evidence in the workflow summary
         if: always()
         run: test -f launch-metrics.md && cat launch-metrics.md >> "$GITHUB_STEP_SUMMARY" || true
+
+  fleet-public-contract:
+    name: Seven-library public contract
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+      - name: Run deterministic monitor regressions
+        run: python -m unittest -v tests/test_replacement_fleet.py
+      - name: Verify PyPI, Release digests, and upstream drift
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -o pipefail
+          python scripts/check_replacement_fleet.py public \
+            reusable/replacement-fleet.json \
+            --report fleet-public.json | tee fleet-public.md
+          cat fleet-public.md >> "$GITHUB_STEP_SUMMARY"
+
+  fleet-public-install:
+    name: Public install / Python ${{ matrix.python-version }}
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.14", "3.15"]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+          allow-prereleases: true
+          check-latest: true
+      - name: Fresh-install all seven public distributions
+        run: |
+          set -o pipefail
+          python scripts/check_replacement_fleet.py install \
+            reusable/replacement-fleet.json \
+            --report fleet-install.json | tee fleet-install.md
+          cat fleet-install.md >> "$GITHUB_STEP_SUMMARY"
+
+  fleet-fallback-and-consumer:
+    name: Fallback selection and real consumer
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+      - name: Verify unsupported-platform fallback selection
+        run: |
+          set -o pipefail
+          python scripts/check_replacement_fleet.py fallback \
+            reusable/replacement-fleet.json \
+            --report fleet-fallback.json | tee fleet-fallback.md
+          cat fleet-fallback.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Verify markdown-it-py against native mdurl
+        run: |
+          set -o pipefail
+          python scripts/check_replacement_fleet.py consumer \
+            reusable/replacement-fleet.json \
+            --report fleet-consumer.json | tee fleet-consumer.md
+          cat fleet-consumer.md >> "$GITHUB_STEP_SUMMARY"

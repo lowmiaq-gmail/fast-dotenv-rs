@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "packages": [
+    {
+      "distribution": "fast-dotenv-rs",
+      "version": "0.1.1",
+      "repository": "lowmiaq-gmail/fast-dotenv-rs",
+      "release_tag": "v0.1.1",
+      "upstream_distribution": "python-dotenv",
+      "upstream_version": "1.2.2",
+      "import_name": "dotenv",
+      "native_module": "dotenv._core",
+      "smoke": "dotenv",
+      "fallback_wheel": null
+    },
+    {
+      "distribution": "fast-rfc3339-validator-rs",
+      "version": "0.1.0",
+      "repository": "lowmiaq-gmail/fast-rfc3339-validator-rs",
+      "release_tag": "v0.1.0",
+      "upstream_distribution": "rfc3339-validator",
+      "upstream_version": "0.1.4",
+      "import_name": "rfc3339_validator",
+      "native_module": "rfc3339_validator._native",
+      "smoke": "rfc3339_validator",
+      "fallback_wheel": "fast_rfc3339_validator_rs-0.1.0-py2.py3-none-any.whl"
+    },
+    {
+      "distribution": "fast-roman-rs",
+      "version": "0.1.0",
+      "repository": "lowmiaq-gmail/fast-roman-rs",
+      "release_tag": "v0.1.0",
+      "upstream_distribution": "roman",
+      "upstream_version": "5.2",
+      "import_name": "roman",
+      "native_module": "roman._native",
+      "smoke": "roman",
+      "fallback_wheel": "fast_roman_rs-0.1.0-py3-none-any.whl"
+    },
+    {
+      "distribution": "fast-base58-rs",
+      "version": "0.1.0",
+      "repository": "lowmiaq-gmail/fast-base58-rs",
+      "release_tag": "v0.1.0",
+      "upstream_distribution": "base58",
+      "upstream_version": "2.1.1",
+      "import_name": "base58",
+      "native_module": "base58._native",
+      "smoke": "base58",
+      "fallback_wheel": "fast_base58_rs-0.1.0-py3-none-any.whl"
+    },
+    {
+      "distribution": "fast-iso8601-rs",
+      "version": "0.1.0",
+      "repository": "lowmiaq-gmail/fast-iso8601-rs",
+      "release_tag": "v0.1.0",
+      "upstream_distribution": "iso8601",
+      "upstream_version": "2.1.0",
+      "import_name": "iso8601",
+      "native_module": "iso8601._native",
+      "smoke": "iso8601",
+      "fallback_wheel": "fast_iso8601_rs-0.1.0-py3-none-any.whl"
+    },
+    {
+      "distribution": "fast-mdurl-rs",
+      "version": "0.1.0",
+      "repository": "lowmiaq-gmail/fast-mdurl-rs",
+      "release_tag": "v0.1.0",
+      "upstream_distribution": "mdurl",
+      "upstream_version": "0.1.2",
+      "import_name": "mdurl",
+      "native_module": "mdurl._native",
+      "smoke": "mdurl",
+      "fallback_wheel": null
+    },
+    {
+      "distribution": "fast-semver-rs",
+      "version": "0.1.1",
+      "repository": "lowmiaq-gmail/fast-semver-rs",
+      "release_tag": "v0.1.1",
+      "upstream_distribution": "semver",
+      "upstream_version": "3.0.4",
+      "import_name": "semver",
+      "native_module": "semver._native",
+      "smoke": "semver",
+      "fallback_wheel": "fast_semver_rs-0.1.1-py3-none-any.whl"
+    }
+  ],
+  "real_consumer": {
+    "distribution": "markdown-it-py",
+    "version": "4.2.0",
+    "replacement_distribution": "fast-mdurl-rs",
+    "replacement_version": "0.1.0",
+    "expected_resolver_limitation": "requires mdurl"
+  }
+}

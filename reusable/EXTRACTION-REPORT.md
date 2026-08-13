@@ -3,6 +3,16 @@
 This is the first dogfood extraction. It separates production-line assets from
 dotenv-specific code so the next rewrite does not clone hidden assumptions.
 
+## Fleet lifecycle monitor
+
+`replacement-fleet.json` and `scripts/check_replacement_fleet.py` form the
+post-release lifecycle gate shared by the seven published replacement libraries.
+The scheduled host is `.github/workflows/launch-monitor.yml`. It verifies public
+PyPI/GitHub artifact identity, frozen-upstream drift, current and prerelease Python
+installation, universal fallback selection, and a real `markdown-it-py` consumer.
+It deliberately composes GitHub Actions and the public registries; it does not add
+a service, database, dashboard, or second scheduler.
+
 ## Reuse unchanged
 
 - Gate order: Reuse → Correctness → Packaging → Value → Evidence.
