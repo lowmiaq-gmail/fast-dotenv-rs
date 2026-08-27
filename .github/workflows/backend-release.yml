@@ -265,6 +265,7 @@ jobs:
       - name: Install public backend beside official python-dotenv
         run: python -m pip install --upgrade pip python-dotenv "fast-dotenv-rs-backend==${{ needs.validate.outputs.version }}"
       - name: Verify public coexistence
+        shell: bash
         run: |
           python - <<'PY'
           import io
