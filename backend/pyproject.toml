@@ -1,0 +1,30 @@
+[build-system]
+requires = ["maturin>=1.9,<2"]
+build-backend = "maturin"
+
+[project]
+name = "fast-dotenv-rs-backend"
+version = "0.1.1"
+description = "Backend-only Rust parser binding for upstream dotenv adapters"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [{ name = "fast-dotenv-rs contributors" }]
+dependencies = []
+keywords = ["dotenv", "parser", "pyo3", "rust", "backend"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Rust",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+[tool.maturin]
+bindings = "pyo3"
+manifest-path = "Cargo.toml"
+python-source = "python"
+module-name = "fast_dotenv_rs_backend._core"
+features = ["pyo3/extension-module"]
+
+[tool.maturin.sbom]
+rust = false

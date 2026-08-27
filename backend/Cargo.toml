@@ -1,21 +1,19 @@
 [package]
-name = "fast-dotenv-rs"
+name = "fast-dotenv-rs-backend"
 version = "0.1.1"
 edition = "2021"
 rust-version = "1.74"
 license = "MIT"
-description = "Rust parser and compatibility core for python-dotenv 1.2.2"
+description = "Backend-only Rust binding for the fast-dotenv parser core"
 repository = "https://github.com/lowmiaq-gmail/fast-dotenv-rs"
 homepage = "https://github.com/lowmiaq-gmail/fast-dotenv-rs"
-keywords = ["dotenv", "python", "parser", "pyo3", "environment"]
-categories = ["config", "parsing"]
 
 [lib]
 name = "_core"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-fast-dotenv-core = { path = "crates/fast-dotenv-core" }
+fast-dotenv-core = { path = "../crates/fast-dotenv-core" }
 pyo3 = { version = "0.24", features = ["extension-module", "abi3-py310"] }
 
 [profile.release]

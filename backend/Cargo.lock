@@ -19,7 +19,7 @@ name = "fast-dotenv-core"
 version = "0.1.1"
 
 [[package]]
-name = "fast-dotenv-rs"
+name = "fast-dotenv-rs-backend"
 version = "0.1.1"
 dependencies = [
  "fast-dotenv-core",
