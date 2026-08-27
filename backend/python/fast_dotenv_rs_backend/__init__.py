@@ -1,5 +1,5 @@
 """Backend-only parser binding; no top-level ``dotenv`` facade is installed."""
 
-from ._core import parse_bindings
+from ._core import BACKEND_CONTRACT, BACKEND_CONTRACT_VERSION, parse_bindings
 
-__all__ = ["parse_bindings"]
+__all__ = ["BACKEND_CONTRACT", "BACKEND_CONTRACT_VERSION", "parse_bindings"]

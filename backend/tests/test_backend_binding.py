@@ -1,4 +1,8 @@
-from fast_dotenv_rs_backend import parse_bindings
+from fast_dotenv_rs_backend import (
+    BACKEND_CONTRACT,
+    BACKEND_CONTRACT_VERSION,
+    parse_bindings,
+)
 from fast_dotenv_rs_backend import _core
 
 
@@ -19,3 +23,10 @@ def test_backend_module_does_not_expose_high_level_or_resolved_api() -> None:
     assert not hasattr(_core, "parse_text")
     assert not hasattr(_core, "parse_resolved")
     assert not hasattr(_core, "parse_variable_atoms")
+
+
+def test_backend_contract_marker_is_strict_and_explicit() -> None:
+    assert BACKEND_CONTRACT == "fast-dotenv-rs.backend.binding"
+    assert BACKEND_CONTRACT_VERSION == 1
+    assert _core.BACKEND_CONTRACT == BACKEND_CONTRACT
+    assert _core.BACKEND_CONTRACT_VERSION == BACKEND_CONTRACT_VERSION
