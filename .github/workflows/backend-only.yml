@@ -71,7 +71,7 @@ jobs:
           assert dotenv.__file__ and 'site-packages' in dotenv.__file__, dotenv.__file__;
           assert BACKEND_CONTRACT == 'fast-dotenv-rs.backend.binding';
           assert BACKEND_CONTRACT_VERSION == 1;
-          assert parse_bindings('A=1\\n')[0][:2] == ('A', '1');
+          assert parse_bindings('A=1'+chr(10))[0][:2] == ('A', '1');
           names=zipfile.ZipFile(wheel[0]).namelist(); assert not any(n.startswith('dotenv/') for n in names), names"
 
       - name: Run backend contract tests
