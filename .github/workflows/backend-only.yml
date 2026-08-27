@@ -1,0 +1,104 @@
+name: Backend-only native CI
+
+on:
+  push:
+    paths:
+      - "backend/**"
+      - "crates/fast-dotenv-core/**"
+      - ".github/workflows/backend-only.yml"
+  pull_request:
+    paths:
+      - "backend/**"
+      - "crates/fast-dotenv-core/**"
+      - ".github/workflows/backend-only.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: backend / ${{ matrix.label }} / Python ${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: linux-x86_64
+            os: ubuntu-22.04
+            python-version: "3.10"
+          - label: linux-x86_64
+            os: ubuntu-22.04
+            python-version: "3.14"
+          - label: linux-aarch64
+            os: ubuntu-24.04-arm
+            python-version: "3.10"
+          - label: linux-aarch64
+            os: ubuntu-24.04-arm
+            python-version: "3.14"
+          - label: macos-arm64
+            os: macos-15
+            python-version: "3.10"
+          - label: macos-arm64
+            os: macos-15
+            python-version: "3.14"
+          - label: macos-x86_64
+            os: macos-15-intel
+            python-version: "3.10"
+          - label: macos-x86_64
+            os: macos-15-intel
+            python-version: "3.14"
+          - label: windows-x86_64
+            os: windows-2022
+            python-version: "3.10"
+          - label: windows-x86_64
+            os: windows-2022
+            python-version: "3.14"
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: Install isolated build and test tooling
+        run: python -m pip install --upgrade pip "maturin==1.11.5" "pytest>=8,<9" "python-dotenv"
+
+      - name: Build backend-only wheel
+        run: >-
+          maturin build
+          --manifest-path backend/Cargo.toml
+          --release
+          --locked
+          --out backend/dist
+
+      - name: Install exact backend wheel
+        run: >-
+          python -c "import glob, subprocess, sys;
+          wheels=glob.glob('backend/dist/*.whl'); assert len(wheels)==1, wheels;
+          subprocess.check_call([sys.executable, '-m', 'pip', 'install', '--force-reinstall', '--no-deps', wheels[0]])"
+
+      - name: Verify backend contract and namespace isolation
+        run: >-
+          python -c "import dotenv, glob, pathlib, zipfile;
+          from fast_dotenv_rs_backend import BACKEND_CONTRACT, BACKEND_CONTRACT_VERSION, parse_bindings;
+          wheel=glob.glob('backend/dist/*.whl'); assert len(wheel)==1 and 'abi3' in pathlib.Path(wheel[0]).name, wheel;
+          assert dotenv.__file__ and 'site-packages' in dotenv.__file__, dotenv.__file__;
+          assert BACKEND_CONTRACT == 'fast-dotenv-rs.backend.binding';
+          assert BACKEND_CONTRACT_VERSION == 1;
+          assert parse_bindings('A=1'+chr(10))[0][:2] == ('A', '1');
+          names=zipfile.ZipFile(wheel[0]).namelist(); assert not any(n.startswith('dotenv/') for n in names), names"
+
+      - name: Run backend contract tests
+        run: python -m pytest -q backend/tests
+
+      - name: Upload verified backend wheel
+        uses: actions/upload-artifact@v7
+        with:
+          name: backend-wheel-${{ matrix.label }}-py${{ matrix.python-version }}
+          path: backend/dist/*.whl
+          if-no-files-found: error

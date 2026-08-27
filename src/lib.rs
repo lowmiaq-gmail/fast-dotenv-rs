@@ -1,7 +1,9 @@
-mod parser;
-
 use std::collections::HashMap;
 
+use fast_dotenv_core::{
+    parse_and_resolve, parse_and_resolve_with_options, parse_bindings as parse_core_bindings,
+    parse_variables, VariableAtom,
+};
 use pyo3::prelude::*;
 
 type BindingRecord = (Option<String>, Option<String>, String, usize, bool);
@@ -14,7 +16,7 @@ fn parse_text(
     interpolate: bool,
     environment: HashMap<String, String>,
 ) -> Vec<(String, Option<String>)> {
-    parser::parse_and_resolve(text, interpolate, &environment)
+    parse_and_resolve(text, interpolate, &environment)
 }
 
 /// Resolve a complete text input in one Python/Rust boundary crossing. The
@@ -26,7 +28,7 @@ fn parse_resolved(
     override_environment: bool,
     environment: HashMap<String, String>,
 ) -> ResolvedRecord {
-    parser::parse_and_resolve_with_options(text, interpolate, override_environment, &environment)
+    parse_and_resolve_with_options(text, interpolate, override_environment, &environment)
 }
 
 /// Return the lossless parser records used by the Python compatibility layer.
@@ -34,7 +36,7 @@ fn parse_resolved(
 /// original.line, error)` and is intentionally a low-level/test-facing API.
 #[pyfunction]
 fn parse_bindings(text: &str) -> Vec<BindingRecord> {
-    parser::parse_bindings(text)
+    parse_core_bindings(text)
         .into_iter()
         .map(|binding| {
             (
@@ -53,11 +55,11 @@ fn parse_bindings(text: &str) -> Vec<BindingRecord> {
 /// This is consumed by the Python compatibility wrapper in `dotenv.variables`.
 #[pyfunction]
 fn parse_variable_atoms(text: &str) -> Vec<VariableAtomRecord> {
-    parser::parse_variables(text)
+    parse_variables(text)
         .into_iter()
         .map(|atom| match atom {
-            parser::VariableAtom::Literal(value) => ("literal".into(), value, None),
-            parser::VariableAtom::Variable { name, default } => ("variable".into(), name, default),
+            VariableAtom::Literal(value) => ("literal".into(), value, None),
+            VariableAtom::Variable { name, default } => ("variable".into(), name, default),
         })
         .collect()
 }

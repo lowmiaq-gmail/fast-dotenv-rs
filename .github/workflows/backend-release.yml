@@ -1,0 +1,281 @@
+name: Backend-only release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Backend version from backend/pyproject.toml and backend/Cargo.toml
+        required: true
+        default: "0.1.1"
+        type: string
+      confirm_release:
+        description: Publish this backend version to PyPI
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-release-${{ inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    name: Validate backend release request
+    runs-on: ubuntu-22.04
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Require explicit confirmation
+        env:
+          CONFIRMED: ${{ inputs.confirm_release }}
+        run: test "$CONFIRMED" = "true"
+      - id: version
+        name: Match Python, Rust, and requested versions
+        env:
+          REQUESTED_VERSION: ${{ inputs.version }}
+        run: |
+          python - <<'PY'
+          import os
+          import pathlib
+          import tomllib
+
+          requested = os.environ["REQUESTED_VERSION"]
+          pyproject = tomllib.loads(pathlib.Path("backend/pyproject.toml").read_text())
+          cargo = tomllib.loads(pathlib.Path("backend/Cargo.toml").read_text())
+          assert requested == pyproject["project"]["version"]
+          assert requested == cargo["package"]["version"]
+          assert requested == "0.1.1", "update the release gate for a new version"
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              output.write(f"version={requested}\n")
+          PY
+
+  wheels:
+    name: Wheel / ${{ matrix.label }}
+    needs: validate
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: linux-x86_64
+            os: ubuntu-22.04
+            target: x86_64
+            manylinux: "2014"
+          - label: linux-aarch64
+            os: ubuntu-24.04-arm
+            target: aarch64
+            manylinux: "2014"
+          - label: macos-arm64
+            os: macos-15
+            target: aarch64
+            manylinux: "off"
+          - label: macos-x86_64
+            os: macos-15-intel
+            target: x86_64
+            manylinux: "off"
+          - label: windows-x86_64
+            os: windows-2022
+            target: x64
+            manylinux: "off"
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+      - name: Install isolated build and test tooling
+        run: python -m pip install --upgrade pip "maturin==1.11.5" "pytest>=8,<9" "python-dotenv"
+      - name: Build backend-only wheel
+        uses: PyO3/maturin-action@86b9d133d34bc1b40018696f782949dac11bd380
+        with:
+          command: build
+          maturin-version: v1.11.5
+          target: ${{ matrix.target }}
+          manylinux: ${{ matrix.manylinux }}
+          args: --manifest-path backend/Cargo.toml --release --locked --compatibility pypi --out backend/dist
+      - name: Install exact backend wheel
+        shell: bash
+        run: |
+          wheel=(backend/dist/*.whl)
+          test "${#wheel[@]}" -eq 1
+          python -m pip install --force-reinstall --no-deps "${wheel[0]}"
+      - name: Verify contract and namespace isolation
+        shell: bash
+        run: |
+          python - <<'PY'
+          import glob
+          import zipfile
+          import dotenv
+          from fast_dotenv_rs_backend import (
+              BACKEND_CONTRACT,
+              BACKEND_CONTRACT_VERSION,
+              parse_bindings,
+          )
+
+          wheel = glob.glob("backend/dist/*.whl")
+          assert len(wheel) == 1 and "abi3" in wheel[0]
+          assert dotenv.__file__ and "site-packages" in dotenv.__file__
+          assert BACKEND_CONTRACT == "fast-dotenv-rs.backend.binding"
+          assert BACKEND_CONTRACT_VERSION == 1
+          assert parse_bindings("A=1\n")[0][:2] == ("A", "1")
+          names = zipfile.ZipFile(wheel[0]).namelist()
+          assert not any(name.startswith("dotenv/") for name in names), names
+          PY
+      - name: Run backend contract tests
+        run: python -m pytest -q backend/tests
+      - name: Upload verified backend wheel
+        uses: actions/upload-artifact@v7
+        with:
+          name: backend-release-wheel-${{ matrix.label }}
+          path: backend/dist/*.whl
+          if-no-files-found: error
+
+  sdist:
+    name: Source distribution
+    needs: validate
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+      - name: Build source distribution
+        run: |
+          python -m pip install --upgrade pip "maturin==1.11.5"
+          maturin sdist --manifest-path backend/Cargo.toml --out dist
+      - name: Verify source distribution can build a wheel
+        run: |
+          python -m pip wheel --no-deps --wheel-dir sdist-wheel dist/*.tar.gz
+          test "$(find sdist-wheel -maxdepth 1 -name '*.whl' | wc -l | tr -d ' ')" -eq 1
+      - name: Upload verified source distribution
+        uses: actions/upload-artifact@v7
+        with:
+          name: backend-release-sdist
+          path: dist/*.tar.gz
+          if-no-files-found: error
+
+  collect:
+    name: Audit immutable backend publish set
+    needs: [validate, wheels, sdist]
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Download all verified artifacts
+        uses: actions/download-artifact@v8
+        with:
+          pattern: backend-release-*
+          path: dist
+          merge-multiple: true
+      - name: Audit package names, metadata, and namespace
+        run: |
+          python -m pip install "twine==6.2.0"
+          twine check dist/*
+          python - <<'PY'
+          import pathlib
+          import tarfile
+          import zipfile
+
+          root = pathlib.Path("dist")
+          wheels = sorted(root.glob("*.whl"))
+          sdists = sorted(root.glob("*.tar.gz"))
+          assert len(wheels) == 5, wheels
+          assert len(sdists) == 1, sdists
+          assert len({wheel.name for wheel in wheels}) == 5
+          for wheel in wheels:
+              assert "fast_dotenv_rs_backend-0.1.1-" in wheel.name
+              assert "abi3" in wheel.name
+              with zipfile.ZipFile(wheel) as archive:
+                  names = archive.namelist()
+                  metadata_name = next(name for name in names if name.endswith(".dist-info/METADATA"))
+                  metadata = archive.read(metadata_name).decode()
+                  assert "Name: fast-dotenv-rs-backend" in metadata
+                  assert "Version: 0.1.1" in metadata
+                  assert any(name.startswith("fast_dotenv_rs_backend/") for name in names)
+                  assert not any(name.startswith("dotenv/") for name in names)
+          with tarfile.open(sdists[0]) as archive:
+              names = archive.getnames()
+              assert any("fast_dotenv_rs_backend" in name for name in names)
+              assert not any("/dotenv/" in name for name in names)
+          PY
+      - name: Upload exact publish set
+        uses: actions/upload-artifact@v7
+        with:
+          name: verified-backend-release
+          path: dist/*
+          if-no-files-found: error
+
+  publish-pypi:
+    name: Publish backend to PyPI
+    needs: [validate, collect]
+    runs-on: ubuntu-22.04
+    environment:
+      name: pypi
+      url: https://pypi.org/project/fast-dotenv-rs-backend/${{ needs.validate.outputs.version }}/
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: verified-backend-release
+          path: dist
+      - name: Publish with PyPI Trusted Publishing
+        uses: pypa/gh-action-pypi-publish@v1.14.2
+        with:
+          packages-dir: dist/
+
+  post-publish:
+    name: Public PyPI install / ${{ matrix.label }}
+    needs: [validate, publish-pypi]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: linux-x86_64
+            os: ubuntu-22.04
+          - label: linux-aarch64
+            os: ubuntu-24.04-arm
+          - label: macos-arm64
+            os: macos-15
+          - label: macos-x86_64
+            os: macos-15-intel
+          - label: windows-x86_64
+            os: windows-2022
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Install public backend beside official python-dotenv
+        run: python -m pip install --upgrade pip python-dotenv "fast-dotenv-rs-backend==${{ needs.validate.outputs.version }}"
+      - name: Verify public coexistence
+        run: |
+          python - <<'PY'
+          import io
+          import dotenv
+          import fast_dotenv_rs_backend
+          from dotenv.parser import parse_stream
+
+          assert "site-packages" in dotenv.__file__
+          assert fast_dotenv_rs_backend.BACKEND_CONTRACT_VERSION == 1
+          records = list(parse_stream(io.StringIO("A=1\nB=\"two\\n\"\nC\n")))
+          assert records[0].value == "1"
+          assert records[1].value == "two\n"
+          assert records[2].value is None
+          print("public_coexistence=PASS")
+          print("dotenv=", dotenv.__file__)
+          print("backend=", fast_dotenv_rs_backend.__file__)
+          PY

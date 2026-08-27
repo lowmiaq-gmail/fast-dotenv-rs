@@ -1,4 +1,5 @@
 /target/
+**/target/
 /.venv/
 /.pytest_cache/
 __pycache__/

@@ -1,0 +1,13 @@
+[package]
+name = "fast-dotenv-core"
+version = "0.1.1"
+edition = "2021"
+rust-version = "1.74"
+license = "MIT"
+description = "Dependency-free Rust parser core for dotenv binding adapters"
+repository = "https://github.com/lowmiaq-gmail/fast-dotenv-rs"
+homepage = "https://github.com/lowmiaq-gmail/fast-dotenv-rs"
+
+[lib]
+name = "fast_dotenv_core"
+path = "src/lib.rs"
