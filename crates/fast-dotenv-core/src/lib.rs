@@ -54,7 +54,6 @@ struct Reader<'a> {
 
 impl<'a> Reader<'a> {
     fn new(source: &'a str) -> Self {
-        let source = source.strip_prefix('\u{feff}').unwrap_or(source);
         Self {
             source,
             position: Position::start(),
@@ -203,14 +202,16 @@ impl<'a> Reader<'a> {
         let mut content_end = None;
         while let Some((c, next)) = next_char(self.source, index) {
             if c == '\\' {
-                // The upstream regex consumes every backslash-plus-character
-                // pair. This keeps an even run of backslashes from escaping
-                // the closing quote.
-                if let Some((_, after_next)) = next_char(self.source, next) {
-                    index = after_next;
-                } else {
-                    index = next;
+                // The upstream regex only treats a backslash plus the
+                // matching quote as an escaped pair. Other backslashes remain
+                // ordinary input characters.
+                if let Some((next_char_value, after_next)) = next_char(self.source, next) {
+                    if next_char_value == quote {
+                        index = after_next;
+                        continue;
+                    }
                 }
+                index = next;
                 continue;
             }
             if c == quote {
@@ -335,13 +336,8 @@ fn parse_binding(reader: &mut Reader<'_>) -> Binding {
             let (_, after_equal) =
                 next_char(reader.source, reader.position.chars).ok_or(ParseError)?;
             let after_equal_ws = reader.consume_horizontal_whitespace_at(after_equal);
-            let had_equal_whitespace = after_equal_ws > after_equal;
             reader.advance_to(after_equal_ws);
-            if had_equal_whitespace && reader.peek() == Some('#') {
-                Some(String::new())
-            } else {
-                Some(reader.parse_value()?)
-            }
+            Some(reader.parse_value()?)
         } else {
             None
         };
@@ -819,49 +815,38 @@ mod tests {
     }
 
     #[test]
-    fn python_dotenv_123_bom_and_empty_inline_comment() {
+    fn python_dotenv_122_bom_and_leading_hash_value() {
         assert_eq!(
             parse_bindings("\u{feff}A= # comment\nB=2\n"),
             vec![
-                binding(Some("A"), Some(""), "A= # comment\n", 1, false),
+                binding(
+                    Some("\u{feff}A"),
+                    Some("# comment"),
+                    "\u{feff}A= # comment\n",
+                    1,
+                    false
+                ),
                 binding(Some("B"), Some("2"), "B=2\n", 2, false),
             ]
         );
     }
 
     #[test]
-    fn python_dotenv_123_quoted_backslash_and_multiline() {
+    fn python_dotenv_122_quoted_backslash_and_multiline() {
         let multiline_escape = String::from("\\") + "\n";
         let input = format!(
             "DOUBLE=\"two\\\\\"\nSINGLE='one\\\\'\nMULTI=\"line{}next\"\n",
             multiline_escape
         );
-        let multiline_original = format!("MULTI=\"line{}next\"\n", multiline_escape);
-        let multiline_value = format!("line{}next", multiline_escape);
+        let first_original = format!(
+            "DOUBLE=\"two\\\\\"\nSINGLE='one\\\\'\nMULTI=\"line{}",
+            multiline_escape
+        );
         assert_eq!(
             parse_bindings(&input),
             vec![
-                binding(
-                    Some("DOUBLE"),
-                    Some("two\\"),
-                    "DOUBLE=\"two\\\\\"\n",
-                    1,
-                    false
-                ),
-                binding(
-                    Some("SINGLE"),
-                    Some("one\\"),
-                    "SINGLE='one\\\\'\n",
-                    2,
-                    false
-                ),
-                binding(
-                    Some("MULTI"),
-                    Some(multiline_value.as_str()),
-                    multiline_original.as_str(),
-                    3,
-                    false,
-                ),
+                binding(None, None, first_original.as_str(), 1, true,),
+                binding(Some("next\""), None, "next\"\n", 4, false),
             ]
         );
     }

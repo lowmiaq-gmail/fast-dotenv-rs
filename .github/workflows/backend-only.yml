@@ -96,6 +96,10 @@ jobs:
       - name: Run backend contract tests
         run: python -m pytest -q backend/tests
 
+      - name: Run shared parser core tests
+        if: matrix.label == 'linux-x86_64' && matrix.python-version == '3.10'
+        run: cargo test --manifest-path crates/fast-dotenv-core/Cargo.toml --locked
+
       - name: Upload verified backend wheel
         uses: actions/upload-artifact@v7
         with:

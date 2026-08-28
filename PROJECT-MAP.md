@@ -31,7 +31,9 @@ fast-dotenv-rs/
 ├── README*.md              # 对外安装、使用、验收入口
 ├── BENCHMARK.md            # 性能证据及边界
 ├── FULL-RELEASE-REPORT.md  # 发布阶段证据报告；注意其时点
-├── src/                    # Rust parser / interpolation / PyO3 核心
+├── src/                    # standalone drop-in 的 PyO3 binding
+├── crates/fast-dotenv-core/ # standalone 与 backend 共享的 parser/interpolation core
+├── backend/                # backend-only PyPI distribution 与 binding tests
 ├── python/dotenv/          # Python drop-in 兼容层
 ├── tests/                  # 候选契约、smoke、benchmark
 ├── scripts/                # 可复现验证与发布辅助脚本
@@ -47,10 +49,21 @@ fast-dotenv-rs/
 
 ### `src/`
 
-- `lib.rs`：最小 PyO3 模块注册和 Rust/Python 数据边界。
-- `parser.rs`：纯 Rust parser、interpolation engine 及 Rust unit tests。
+- `lib.rs`：standalone drop-in 的 PyO3 模块注册和 Rust/Python 数据边界。
 
-如果修改 Rust 热路径，先看这里；不要把 Python 特有副作用逻辑硬搬进 Rust。
+### `crates/fast-dotenv-core/`
+
+- `src/lib.rs`：standalone 与 backend 共用的 parser、interpolation engine
+  以及 Rust unit tests。
+
+修改共享 Rust 热路径先看这里；不要把 Python 特有副作用逻辑硬搬进 Rust。
+
+### `backend/`
+
+- `src/lib.rs`：backend-only PyO3 binding，只暴露上游 adapter 所需的
+  lossless binding records。
+- `python/`：`fast_dotenv_rs_backend` 包装层。
+- `tests/`：backend contract 与 namespace isolation tests。
 
 ### `python/dotenv/`
 
@@ -115,7 +128,9 @@ FULL-REWRITE-PLAN.md
 
 | 我要改什么 | 首先去哪里 | 同时检查 |
 |---|---|---|
-| Rust parser / interpolation | `src/` | parser / upstream / differential tests |
+| Rust parser / interpolation | `crates/fast-dotenv-core/` | parser / upstream / differential tests |
+| standalone PyO3 binding | `src/lib.rs` | packaged wheel / drop-in tests |
+| backend-only binding | `backend/` | backend contract / coexistence / wheel tests |
 | `load_dotenv`、find/get/set/unset、文件与环境行为 | `python/dotenv/main.py` | `UPSTREAM-CONTRACT.md`、完整上游测试 |
 | CLI | `python/dotenv/cli.py`、`__main__.py` | CLI upstream tests、打包 entry point |
 | IPython | `python/dotenv/ipython.py` | upstream IPython tests |
