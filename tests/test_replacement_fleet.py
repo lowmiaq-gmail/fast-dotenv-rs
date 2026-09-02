@@ -84,14 +84,17 @@ class PublicAuditTests(unittest.TestCase):
         self.assertEqual(len(results), 7)
         self.assertEqual({item["status"] for item in results}, {"PASS"})
 
-    def test_upstream_drift_fails_only_affected_library(self) -> None:
+    def test_upstream_drift_warns_only_affected_library(self) -> None:
         package = self.manifest["packages"][0]
         url = f"https://pypi.org/pypi/{package['upstream_distribution']}/json"
         self.payloads[url]["info"]["version"] = "999.0.0"
         results = audit_public(self.manifest, self.fetch)
+        warned = [item for item in results if item["status"] == "WARN"]
+        self.assertEqual([item["library"] for item in warned], [package["distribution"]])
+        self.assertIn("upstream version drift", warned[0]["evidence"])
+        self.assertIn("reusable/replacement-fleet.json", warned[0]["evidence"])
         failed = [item for item in results if item["status"] == "FAIL"]
-        self.assertEqual([item["library"] for item in failed], [package["distribution"]])
-        self.assertIn("upstream version drift", failed[0]["evidence"])
+        self.assertEqual(failed, [])
 
     def test_artifact_digest_mismatch_is_not_hidden(self) -> None:
         package = self.manifest["packages"][2]
