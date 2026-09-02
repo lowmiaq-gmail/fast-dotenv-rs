@@ -7,7 +7,7 @@
       "repository": "lowmiaq-gmail/fast-dotenv-rs",
       "release_tag": "v0.1.1",
       "upstream_distribution": "python-dotenv",
-      "upstream_version": "1.2.2",
+      "upstream_version": "1.2.3",
       "import_name": "dotenv",
       "native_module": "dotenv._core",
       "smoke": "dotenv",
