@@ -29,6 +29,8 @@ jobs:
       version: ${{ steps.version.outputs.version }}
     steps:
       - uses: actions/checkout@v6
+      - name: Require the default branch
+        run: test "$GITHUB_REF" = "refs/heads/main"
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
@@ -263,7 +265,18 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install public backend beside official python-dotenv
-        run: python -m pip install --upgrade pip python-dotenv "fast-dotenv-rs-backend==${{ needs.validate.outputs.version }}"
+        shell: bash
+        env:
+          RELEASE_VERSION: ${{ needs.validate.outputs.version }}
+        run: |
+          for attempt in 1 2 3 4 5 6; do
+            if python -m pip install --no-cache-dir --upgrade pip python-dotenv "fast-dotenv-rs-backend==${RELEASE_VERSION}"; then
+              exit 0
+            fi
+            sleep 20
+          done
+          echo "Public backend was not installable after six propagation retries" >&2
+          exit 1
       - name: Verify public coexistence
         shell: bash
         run: |

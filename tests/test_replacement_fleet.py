@@ -120,6 +120,23 @@ class PublicAuditTests(unittest.TestCase):
         self.assertEqual([item["library"] for item in failed], [package["distribution"]])
         self.assertIn("missing PyPI files", failed[0]["evidence"])
 
+    def test_temporary_public_api_failure_is_not_hidden(self) -> None:
+        package = self.manifest["packages"][0]
+        failed_url = (
+            f"https://pypi.org/pypi/{package['distribution']}/"
+            f"{package['version']}/json"
+        )
+
+        def fetch(url: str) -> dict:
+            if url == failed_url:
+                raise CheckFailure("temporary public API failure")
+            return self.fetch(url)
+
+        results = audit_public(self.manifest, fetch)
+        failed = [item for item in results if item["status"] == "FAIL"]
+        self.assertEqual([item["library"] for item in failed], [package["distribution"]])
+        self.assertIn("temporary public API failure", failed[0]["evidence"])
+
 
 if __name__ == "__main__":
     unittest.main()
