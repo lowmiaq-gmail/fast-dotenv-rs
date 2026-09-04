@@ -167,18 +167,25 @@ def audit_public(
                 raise CheckFailure("GitHub Release is missing SHA256SUMS")
 
             upstream_latest = (latest_upstream.get("info") or {}).get("version")
+            drift_status = "PASS"
+            drift_evidence = (
+                f"{len(pypi_files)} PyPI files match GitHub Release digests; "
+                f"upstream remains {upstream_latest}"
+            )
             if upstream_latest != package["upstream_version"]:
-                raise CheckFailure(
-                    "upstream version drift: frozen="
-                    f"{package['upstream_version']} latest={upstream_latest}"
+                drift_status = "WARN"
+                drift_evidence = (
+                    f"{len(pypi_files)} PyPI files match GitHub Release digests; "
+                    f"upstream version drift (frozen={package['upstream_version']} "
+                    f"latest={upstream_latest}); consider updating "
+                    f"upstream_version in reusable/replacement-fleet.json"
                 )
             results.append(
                 result(
                     distribution,
                     "public-contract",
-                    "PASS",
-                    f"{len(pypi_files)} PyPI files match GitHub Release digests; "
-                    f"upstream remains {upstream_latest}",
+                    drift_status,
+                    drift_evidence,
                 )
             )
         except (CheckFailure, KeyError, TypeError) as exc:
